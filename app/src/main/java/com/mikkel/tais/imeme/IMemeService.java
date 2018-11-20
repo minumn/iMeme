@@ -1,11 +1,17 @@
 package com.mikkel.tais.imeme;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Binder;
+import android.os.Build;
 import android.os.IBinder;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
 import android.widget.ImageView;
 
@@ -23,12 +29,17 @@ import com.android.volley.toolbox.Volley;
  */
 public class IMemeService extends Service {
 
+    private static final String CHANNEL_ID = "IMemeServiceNotification";
     private final IBinder binder = new IMemeUpdateServiceBinder();
     private static final String LOG_ID = "iMemeService_log";
 
 
     // Volley stuff
     private RequestQueue volleyQueue = Volley.newRequestQueue(this);
+
+    // Notification stuff
+    NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+    private static final int NOTIFICATION_ID = 101;
 
     // # # # Setup functions # # #
 
@@ -55,6 +66,9 @@ public class IMemeService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        // Very important on Android 8.0 and higher to create notificationChannel!
+        createNotificationChannel();
 
         // For testing
         getRandomMeme();
@@ -98,4 +112,43 @@ public class IMemeService extends Service {
         volleyQueue.add(imageRequest);
     }
 
+
+    // # # # Notifications # # #
+
+    // REF: https://developer.android.com/training/notify-user/build-notification
+    private void notifyUserAboutNewMeme() {
+        // TODO: I think this will start MainActivity when pressing notification. Should be changed to randomBillMeme later.
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
+
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                //.setSmallIcon(R.drawable.notification_icon)
+                .setContentTitle("iMeme")
+                .setContentText("Check out this new meme!")
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                // Following two lines makes you able to tap on the notification to shoot pendingIntent
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true);
+
+        // notificationId is a unique int for each notification that you must define
+        notificationManager.notify(NOTIFICATION_ID, mBuilder.build());
+    }
+
+    private void createNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // TODO: What is name and description?
+            CharSequence name = "name"; //getString(R.string.channel_name);
+            String description = "description"; //getString(R.string.channel_description);
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+            channel.setDescription(description);
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
 }
