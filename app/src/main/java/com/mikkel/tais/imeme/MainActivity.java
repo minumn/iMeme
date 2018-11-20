@@ -1,8 +1,14 @@
 package com.mikkel.tais.imeme;
 
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -13,8 +19,17 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+// REF: This class have been made using the default of Android Studio and previous assignments of ours.
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+    private static final String LOG_ID = "MainActivity_log";
+
+    // Stuff for IMeme Service
+    private ServiceConnection serviceConnection;
+    private IMemeService iMemeService;
+    private boolean boundToIMemeService = false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,4 +113,38 @@ public class MainActivity extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
+    // # # # SERVICE FUNCTIONALITY # # #
+
+    private void startIMemeService(){
+        startService(new Intent(MainActivity.this, IMemeService.class));
+    }
+
+    private void setupConnectionToIMemeService() {
+        serviceConnection = new ServiceConnection() {
+            public void onServiceConnected(ComponentName className, IBinder service) {
+                iMemeService = ((IMemeService.IMemeUpdateServiceBinder) service).getService();
+                Log.d(LOG_ID, "iMeme service connected.");
+            }
+
+            public void onServiceDisconnected(ComponentName className) {
+                iMemeService = null;
+                Log.d(LOG_ID, "iMeme service disconnected.");
+            }
+        };
+    }
+    void bindToStockService() {
+        Intent intent = new Intent(MainActivity.this, IMemeService.class);
+        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
+        boundToIMemeService = true;
+    }
+
+    void unBindFromStockService() {
+        if (boundToIMemeService) {
+            unbindService(serviceConnection);
+            boundToIMemeService = false;
+        }
+    }
+
+    // # # # onFunctions # # #
 }
