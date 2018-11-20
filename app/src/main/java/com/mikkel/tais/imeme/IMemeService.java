@@ -2,14 +2,18 @@ package com.mikkel.tais.imeme;
 
 import android.app.Service;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Binder;
 import android.os.IBinder;
+import android.support.design.widget.Snackbar;
 import android.util.Log;
+import android.widget.ImageView;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.ImageRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
@@ -65,23 +69,33 @@ public class IMemeService extends Service {
     // # # # Functionality functions # # #
 
     public void getRandomMeme(){
-        final String url = "https://belikebill.ga/billgen-API.php?default=1";
+        final String imageUrl = "https://belikebill.ga/billgen-API.php?default=1";
 
-        // TODO: Can we use stringRequest? NOT TESTED
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
-                new Response.Listener<String>() {
+        // TODO: Volley not tested!
+        // REF: Inspiration found on https://android--examples.blogspot.com/2017/02/android-volley-image-request-example.html
+        // TODO: Could look at above link how they save files.
+
+        ImageRequest imageRequest = new ImageRequest(
+                imageUrl,
+                new Response.Listener<Bitmap>() {
                     @Override
-                    public void onResponse(String response) {
-                        // Display the first 500 characters of the response string.
-                        String string = response.substring(0,500);
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
+                    public void onResponse(Bitmap response) {
+                        // TODO: Do something with response! Maybe save it locally and send a broadcast with link.
 
-            }
-        });
-        volleyQueue.add(stringRequest);
+                    }
+                },
+                0, // Image width
+                0, // Image height
+                ImageView.ScaleType.CENTER_CROP, // Image scale type
+                Bitmap.Config.RGB_565, //Image decode configuration
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        error.printStackTrace();
+                    }
+                }
+        );
+        volleyQueue.add(imageRequest);
     }
 
 }
