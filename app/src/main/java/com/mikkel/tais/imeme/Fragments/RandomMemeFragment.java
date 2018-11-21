@@ -56,7 +56,7 @@ public class RandomMemeFragment extends Fragment {
                     @Override
                     public void onClick(View v) {
                         Toast.makeText(getActivity(), "Back button clicked!", Toast.LENGTH_SHORT).show();
-
+                        getActivity().getSupportFragmentManager().popBackStack();
                     }
                 }
         );
@@ -80,7 +80,9 @@ public class RandomMemeFragment extends Fragment {
         refreshMemeBtn = getActivity().findViewById(R.id.newMemeBtn);
 
         // Set default picture
-        randomMemeImage.setImageResource(R.mipmap.ic_launcher);
+        if (randomMemeImage != null) {
+            randomMemeImage.setImageResource(R.mipmap.ic_launcher);
+        }
     }
 
     public void getRandomMeme(){

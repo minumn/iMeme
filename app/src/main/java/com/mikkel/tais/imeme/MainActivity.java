@@ -40,8 +40,7 @@ public class MainActivity extends AppCompatActivity
     private boolean boundToIMemeService = false;
 
     // Fragment stuff
-    RandomMemeFragment randomMemeFragment= new RandomMemeFragment();
-    boolean fragmentSet = false;
+    RandomMemeFragment randomMemeFragment = new RandomMemeFragment();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,14 +72,12 @@ public class MainActivity extends AppCompatActivity
 
     private void setFragmentView(Fragment fragment) {
         if( findViewById(R.id.fragment_container) != null ) {
+
             FragmentTransaction fragmentTransaction = getSupportFragmentManager()
-                    .beginTransaction();
-            if(!fragmentSet) {
-                fragmentTransaction.add(R.id.fragment_container, fragment);
-                fragmentSet = true;
-            } else {
-                fragmentTransaction.replace(R.id.fragment_container, fragment);
-            }
+                    .beginTransaction()
+                    .replace(R.id.fragment_container, fragment);
+
+            // TODO: Any way to check what fragment is currently shown to prevent the user from opening the same multiple times?
             fragmentTransaction.addToBackStack(null)
                     .commit();
         }
