@@ -18,6 +18,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
+import android.widget.Toast;
 
 import com.mikkel.tais.imeme.Services.IMemeService;
 
@@ -26,6 +28,7 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private static final String LOG_ID = "MainActivity_log";
+    Button testButton;
 
     // Stuff for IMeme Service
     private ServiceConnection serviceConnection;
@@ -36,11 +39,11 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
         // Make sure Service is running.
         startIMemeService();
 
-        setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -61,6 +64,18 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        testButton = findViewById(R.id.button2);
+        testButton.setOnClickListener(
+                new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    
+                    setContentView(R.layout.random_meme_fragment);
+                    Toast.makeText(MainActivity.this, "Button clicked!", Toast.LENGTH_SHORT).show();
+                }
+                }
+        );
     }
 
     @Override

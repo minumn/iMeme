@@ -28,7 +28,7 @@
             android:name=".Services.IMemeService"
             android:enabled="true"
             android:exported="true"
-            android:permission="false" />
+            android:permission="true" />
 
         <activity
             android:name=".SettingsActivity"

@@ -20,6 +20,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageRequest;
 import com.android.volley.toolbox.Volley;
 import com.mikkel.tais.imeme.MainActivity;
+import com.mikkel.tais.imeme.R;
 
 /**
  * This Service is supposed to handle URL calls getting Memes as well as nofitications for the user.
@@ -33,10 +34,10 @@ public class IMemeService extends Service {
 
 
     // Volley stuff
-    private RequestQueue volleyQueue = Volley.newRequestQueue(this);
+    private RequestQueue volleyQueue;// = Volley.newRequestQueue(this);
 
     // Notification stuff
-    NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+    NotificationManagerCompat notificationManager;// = NotificationManagerCompat.from(this);
     private static final int NOTIFICATION_ID = 101;
 
     // # # # Setup functions # # #
@@ -65,11 +66,16 @@ public class IMemeService extends Service {
     public void onCreate() {
         super.onCreate();
 
+        // Init stuff
+        RequestQueue volleyQueue = Volley.newRequestQueue(this);
+        notificationManager = NotificationManagerCompat.from(this);
+
         // Very important on Android 8.0 and higher to create notificationChannel!
         createNotificationChannel();
+        notifyUserAboutNewMeme();
 
         // For testing
-        getRandomMeme();
+        //getRandomMeme();
     }
 
     @Override
@@ -121,7 +127,7 @@ public class IMemeService extends Service {
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
-                //.setSmallIcon(R.drawable.notification_icon)
+                .setSmallIcon(R.drawable.ic_menu_share)
                 .setContentTitle("iMeme")
                 .setContentText("Check out this new meme!")
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
