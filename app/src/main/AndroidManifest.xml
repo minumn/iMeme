@@ -25,7 +25,7 @@
         </activity>
 
         <service
-            android:name=".IMemeService"
+            android:name=".Services.IMemeService"
             android:enabled="true"
             android:exported="true"
             android:permission="false" />
