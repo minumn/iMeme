@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 
 public class RandomMemeViewModel extends ViewModel {
     // TODO: Implement the ViewModel
+    // https://developer.android.com/topic/libraries/architecture/viewmodel
 
     private Bitmap randomMeme;
 
