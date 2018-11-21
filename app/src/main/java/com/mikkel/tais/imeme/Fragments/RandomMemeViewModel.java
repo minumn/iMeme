@@ -2,9 +2,6 @@ package com.mikkel.tais.imeme.Fragments;
 
 import android.arch.lifecycle.ViewModel;
 import android.graphics.Bitmap;
-import android.media.Image;
-
-import com.mikkel.tais.imeme.R;
 
 public class RandomMemeViewModel extends ViewModel {
     // TODO: Implement the ViewModel

@@ -66,6 +66,7 @@ public class RandomMemeFragment extends Fragment {
                     @Override
                     public void onClick(View v) {
                         Toast.makeText(getActivity(), "Refresh meme clicked!", Toast.LENGTH_SHORT).show();
+                        // TODO: Should prob use ViewModel?
                         getRandomMeme();
                     }
                 }
@@ -78,15 +79,13 @@ public class RandomMemeFragment extends Fragment {
         backBtn = getActivity().findViewById(R.id.backBtn);
         refreshMemeBtn = getActivity().findViewById(R.id.newMemeBtn);
 
-
         // Set default picture
         randomMemeImage.setImageResource(R.mipmap.ic_launcher);
     }
 
     public void getRandomMeme(){
         final String imageUrl = "https://belikebill.ga/billgen-API.php?default=1";
-
-        // TODO: Volley not tested!
+        // TODO: Should be in the service
         // REF: Inspiration found on https://android--examples.blogspot.com/2017/02/android-volley-image-request-example.html
         // TODO: Could look at above link how they save files.
 

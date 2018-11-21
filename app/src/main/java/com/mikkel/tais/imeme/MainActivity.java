@@ -31,6 +31,7 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private static final String LOG_ID = "MainActivity_log";
+    private static final int SETTINGS_REQ = 102;
     Button testButton;
 
     // Stuff for IMeme Service
@@ -136,6 +137,7 @@ public class MainActivity extends AppCompatActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            startActivityForResult(new Intent(MainActivity.this, SettingsActivity.class), SETTINGS_REQ);
             return true;
         }
 
