@@ -66,7 +66,6 @@ public class MainActivity extends AppCompatActivity
                     public void onClick(View v) {
                         Toast.makeText(MainActivity.this, "Button clicked!", Toast.LENGTH_SHORT).show();
 
-                        setFragmentView(randomMemeFragment);
                     }
                 }
         );
@@ -137,6 +136,7 @@ public class MainActivity extends AppCompatActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            // TODO: Implement onActivityResult?
             startActivityForResult(new Intent(MainActivity.this, SettingsActivity.class), SETTINGS_REQ);
             return true;
         }
@@ -154,8 +154,8 @@ public class MainActivity extends AppCompatActivity
             // Handle the camera action
         } else if (id == R.id.nav_gallery) {
 
-        } else if (id == R.id.nav_slideshow) {
-
+        } else if (id == R.id.nav_randomBillMeme) {
+            setFragmentView(randomMemeFragment);
         } else if (id == R.id.nav_manage) {
 
         } else if (id == R.id.nav_share) {

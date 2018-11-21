@@ -12,9 +12,9 @@
 
         <ImageView
             android:id="@+id/randomMemeImageView"
-            android:layout_width="299dp"
-            android:layout_height="300dp"
-            android:layout_marginTop="42dp"
+            android:layout_width="362dp"
+            android:layout_height="346dp"
+            android:layout_marginTop="16dp"
             android:contentDescription="@string/randommemeimage"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
