@@ -8,6 +8,8 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -21,6 +23,7 @@ import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.mikkel.tais.imeme.Fragments.RandomMemeFragment;
 import com.mikkel.tais.imeme.Services.IMemeService;
 
 // REF: This class have been made using the default of Android Studio and previous assignments of ours.
@@ -35,6 +38,9 @@ public class MainActivity extends AppCompatActivity
     private IMemeService iMemeService;
     private boolean boundToIMemeService = false;
 
+    // Fragment stuff
+    RandomMemeFragment randomMemeFragment= new RandomMemeFragment();
+    boolean fragmentSet = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +50,43 @@ public class MainActivity extends AppCompatActivity
         // Make sure Service is running.
         startIMemeService();
 
+        initiateDrawerMenu();
+
+        initiateTestButton();
+
+
+    }
+
+    private void initiateTestButton() {
+        testButton = findViewById(R.id.button2);
+        testButton.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Toast.makeText(MainActivity.this, "Button clicked!", Toast.LENGTH_SHORT).show();
+
+                        setFragmentView(randomMemeFragment);
+                    }
+                }
+        );
+    }
+
+    private void setFragmentView(Fragment fragment) {
+        if( findViewById(R.id.fragment_container) != null ) {
+            FragmentTransaction fragmentTransaction = getSupportFragmentManager()
+                    .beginTransaction();
+            if(!fragmentSet) {
+                fragmentTransaction.add(R.id.fragment_container, fragment);
+                fragmentSet = true;
+            } else {
+                fragmentTransaction.replace(R.id.fragment_container, fragment);
+            }
+            fragmentTransaction.addToBackStack(null)
+                    .commit();
+        }
+    }
+
+    private void initiateDrawerMenu() {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -64,18 +107,6 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-
-        testButton = findViewById(R.id.button2);
-        testButton.setOnClickListener(
-                new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    
-                    setContentView(R.layout.random_meme_fragment);
-                    Toast.makeText(MainActivity.this, "Button clicked!", Toast.LENGTH_SHORT).show();
-                }
-                }
-        );
     }
 
     @Override
@@ -84,6 +115,7 @@ public class MainActivity extends AppCompatActivity
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
+
             super.onBackPressed();
         }
     }
