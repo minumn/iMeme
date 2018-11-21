@@ -19,6 +19,8 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.mikkel.tais.imeme.Services.IMemeService;
+
 // REF: This class have been made using the default of Android Studio and previous assignments of ours.
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {

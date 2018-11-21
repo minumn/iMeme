@@ -1,4 +1,4 @@
-package com.mikkel.tais.imeme;
+package com.mikkel.tais.imeme.Services;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -9,19 +9,17 @@ import android.graphics.Bitmap;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
 import android.widget.ImageView;
 
-import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageRequest;
-import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.mikkel.tais.imeme.MainActivity;
 
 /**
  * This Service is supposed to handle URL calls getting Memes as well as nofitications for the user.
