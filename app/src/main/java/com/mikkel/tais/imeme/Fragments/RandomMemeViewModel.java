@@ -1,14 +1,17 @@
 package com.mikkel.tais.imeme.Fragments;
 
 import android.arch.lifecycle.ViewModel;
+import android.graphics.Bitmap;
 import android.media.Image;
+
+import com.mikkel.tais.imeme.R;
 
 public class RandomMemeViewModel extends ViewModel {
     // TODO: Implement the ViewModel
 
-    private Image randomMeme;
+    private Bitmap randomMeme;
 
-    public Image getRandomMeme() {
+    public Bitmap getRandomMeme() {
         if (randomMeme == null){
             randomMeme = loadRandomMemes();
         }
@@ -16,9 +19,9 @@ public class RandomMemeViewModel extends ViewModel {
         return randomMeme;
     }
 
-    private Image loadRandomMemes(){
+    private Bitmap loadRandomMemes(){
         // Get randomMeme from Service
         // TODO: Fix function. Dont return randomMeme
-        return randomMeme;
+        return randomMeme; //R.mipmap.ic_launcher;
     }
 }
