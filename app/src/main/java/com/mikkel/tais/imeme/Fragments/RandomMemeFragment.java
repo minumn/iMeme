@@ -1,11 +1,20 @@
 package com.mikkel.tais.imeme.Fragments;
 
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,15 +27,26 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageRequest;
 import com.android.volley.toolbox.Volley;
+import com.mikkel.tais.imeme.MainActivity;
 import com.mikkel.tais.imeme.R;
+import com.mikkel.tais.imeme.Services.IMemeService;
+
+import static com.mikkel.tais.imeme.Services.IMemeService.BROADCAST_NEW_BILL_MEME_AVAILABLE;
 
 public class RandomMemeFragment extends Fragment {
 
+    private static final String LOG_ID = "RandomMemeFragment_log";
     private RandomMemeViewModel mViewModel;
     private ImageView randomMemeImage;
     private Button backBtn, refreshMemeBtn;
 
     private RequestQueue volleyQueue;
+    private BroadcastReceiver broadcastDataUpdatedReceiver;
+
+    // Stuff for IMeme Service
+    private ServiceConnection serviceConnection;
+    public IMemeService iMemeService;
+    private boolean boundToIMemeService = false;
 
     public static RandomMemeFragment newInstance() {
         return new RandomMemeFragment();
@@ -46,8 +66,15 @@ public class RandomMemeFragment extends Fragment {
 
         initiateVariables();
         setButtonFunctionality();
+        setupConnectionToIMemeService();
+        setupBroadcaster();
+    }
 
-        getRandomMeme();
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        unBindFromIMemeService();
+        unRegisterBroadcast(broadcastDataUpdatedReceiver);
     }
 
     private void setButtonFunctionality() {
@@ -67,7 +94,7 @@ public class RandomMemeFragment extends Fragment {
                     public void onClick(View v) {
                         Toast.makeText(getActivity(), "Refresh meme clicked!", Toast.LENGTH_SHORT).show();
                         // TODO: Should prob use ViewModel?
-                        getRandomMeme();
+                        iMemeService.requestRandomMeme();
                     }
                 }
         );
@@ -85,35 +112,66 @@ public class RandomMemeFragment extends Fragment {
         }
     }
 
-    public void getRandomMeme(){
-        final String imageUrl = "https://belikebill.ga/billgen-API.php?default=1";
-        // TODO: Should be in the service
-        // REF: Inspiration found on https://android--examples.blogspot.com/2017/02/android-volley-image-request-example.html
-        // TODO: Could look at above link how they save files.
+    // # # # SERVICE FUNCTIONALITY # # #
+    private void setupConnectionToIMemeService() {
+        serviceConnection = new ServiceConnection() {
+            public void onServiceConnected(ComponentName className, IBinder service) {
+                iMemeService = ((IMemeService.IMemeUpdateServiceBinder) service).getService();
+                Log.d(LOG_ID, "iMeme service connected.");
+                iMemeService.requestRandomMeme();
+            }
 
-        ImageRequest imageRequest = new ImageRequest(
-                imageUrl,
-                new Response.Listener<Bitmap>() {
-                    @Override
-                    public void onResponse(Bitmap response) {
-                        // TODO: Do something with response! Maybe save it locally and send a broadcast with link.
-                        randomMemeImage.setImageBitmap(response);
-                    }
-                },
-                0, // Image width
-                0, // Image height
-                ImageView.ScaleType.CENTER_CROP, // Image scale type
-                Bitmap.Config.RGB_565, //Image decode configuration
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        error.printStackTrace();
-                    }
-                }
-        );
-        volleyQueue.add(imageRequest);
+            public void onServiceDisconnected(ComponentName className) {
+                iMemeService = null;
+                Log.d(LOG_ID, "iMeme service disconnected.");
+            }
+        };
+        bindToIMemeService();
     }
 
+    private void bindToIMemeService() {
+        Intent intent = new Intent(getActivity(), IMemeService.class);
+        getActivity().bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
+        boundToIMemeService = true;
+    }
 
+    private void unBindFromIMemeService() {
+        if (boundToIMemeService) {
+            getActivity().unbindService(serviceConnection);
+            boundToIMemeService = false;
+        }
+    }
 
+    // # # # BROADCAST # # #
+    public void registerBroadcast(BroadcastReceiver broadcastDataUpdatedReceiver){
+        Log.d(LOG_ID, "registering receivers");
+
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(BROADCAST_NEW_BILL_MEME_AVAILABLE);
+        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(broadcastDataUpdatedReceiver, filter);
+    }
+
+    public void unRegisterBroadcast(BroadcastReceiver broadcastDataUpdatedReceiver){
+        Log.d(LOG_ID, "unregistering receivers");
+        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(broadcastDataUpdatedReceiver);
+    }
+
+    private void setupBroadcaster(){
+        broadcastDataUpdatedReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Log.d(LOG_ID, "");
+                String result = intent.getStringExtra(IMemeService.BROADCAST_RESULT);
+
+                if(result == null) {
+                    Log.d(LOG_ID, "result from broadcast is null. This should not happen");
+                    result = "";
+                }
+                if(boundToIMemeService) {
+                    randomMemeImage.setImageBitmap(iMemeService.getRandomMeme());
+                }
+            }
+        };
+        registerBroadcast(broadcastDataUpdatedReceiver);
+    }
 }

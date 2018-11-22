@@ -4,13 +4,16 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.ImageView;
 
@@ -29,8 +32,11 @@ import com.mikkel.tais.imeme.R;
 public class IMemeService extends Service {
 
     private static final String CHANNEL_ID = "IMemeServiceNotification";
+    public static final String BROADCAST_RESULT = "broadcast_result";
+    public static final String BROADCAST_NEW_BILL_MEME_AVAILABLE = "broadcast_new_bill_meme_available";
     private final IBinder binder = new IMemeUpdateServiceBinder();
     private static final String LOG_ID = "iMemeService_log";
+    private Bitmap randomBillMeme;
 
 
     // Volley stuff
@@ -67,7 +73,7 @@ public class IMemeService extends Service {
         super.onCreate();
 
         // Init stuff
-        RequestQueue volleyQueue = Volley.newRequestQueue(this);
+        volleyQueue = Volley.newRequestQueue(this);
         notificationManager = NotificationManagerCompat.from(this);
 
         // Very important on Android 8.0 and higher to create notificationChannel!
@@ -86,10 +92,13 @@ public class IMemeService extends Service {
 
     // # # # Functionality functions # # #
 
-    public void getRandomMeme(){
-        final String imageUrl = "https://belikebill.ga/billgen-API.php?default=1";
+    public Bitmap getRandomMeme(){
+        return randomBillMeme;
+    }
 
-        // TODO: Volley not tested!
+    public void requestRandomMeme(){
+        final String imageUrl = "https://belikebill.ga/billgen-API.php?default=1";
+        // TODO: Should be in the service
         // REF: Inspiration found on https://android--examples.blogspot.com/2017/02/android-volley-image-request-example.html
         // TODO: Could look at above link how they save files.
 
@@ -99,7 +108,8 @@ public class IMemeService extends Service {
                     @Override
                     public void onResponse(Bitmap response) {
                         // TODO: Do something with response! Maybe save it locally and send a broadcast with link.
-
+                        randomBillMeme = response;
+                        broadcastNewBillMemeAvailable("");
                     }
                 },
                 0, // Image width
@@ -115,7 +125,6 @@ public class IMemeService extends Service {
         );
         volleyQueue.add(imageRequest);
     }
-
 
     // # # # Notifications # # #
 
@@ -154,5 +163,26 @@ public class IMemeService extends Service {
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
         }
+    }
+
+    // # # # BROADCAST # # #
+    private void broadcastNewBillMemeAvailable(String result){
+        Log.d(LOG_ID, "Broadcasting new bill meme available.");
+        Intent intent = new Intent(BROADCAST_NEW_BILL_MEME_AVAILABLE);
+        intent.putExtra(BROADCAST_RESULT, result);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
+
+    public void registerBroadcast(BroadcastReceiver broadcastDataUpdatedReceiver){
+        Log.d(LOG_ID, "registering receivers");
+
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(BROADCAST_NEW_BILL_MEME_AVAILABLE);
+        LocalBroadcastManager.getInstance(this).registerReceiver(broadcastDataUpdatedReceiver, filter);
+    }
+
+    public void unRegisterBroadcast(BroadcastReceiver broadcastDataUpdatedReceiver){
+        Log.d(LOG_ID, "unregistering receivers");
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastDataUpdatedReceiver);
     }
 }

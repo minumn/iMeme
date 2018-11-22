@@ -36,27 +36,45 @@ public class MainActivity extends AppCompatActivity
 
     // Stuff for IMeme Service
     private ServiceConnection serviceConnection;
-    private IMemeService iMemeService;
+    public IMemeService iMemeService;
     private boolean boundToIMemeService = false;
 
     // Fragment stuff
     RandomMemeFragment randomMemeFragment = new RandomMemeFragment();
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        // Make sure Service is running.
-        startIMemeService();
-
-        initiateDrawerMenu();
-
-        initiateTestButton();
-
-
+    // # # # SERVICE FUNCTIONALITY # # #
+    private void startIMemeService(){
+        startService(new Intent(MainActivity.this, IMemeService.class));
     }
 
+    private void setupConnectionToIMemeService() {
+        serviceConnection = new ServiceConnection() {
+            public void onServiceConnected(ComponentName className, IBinder service) {
+                iMemeService = ((IMemeService.IMemeUpdateServiceBinder) service).getService();
+                Log.d(LOG_ID, "iMeme service connected.");
+            }
+
+            public void onServiceDisconnected(ComponentName className) {
+                iMemeService = null;
+                Log.d(LOG_ID, "iMeme service disconnected.");
+            }
+        };
+    }
+
+    private void bindToIMemeService() {
+        Intent intent = new Intent(MainActivity.this, IMemeService.class);
+        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
+        boundToIMemeService = true;
+    }
+
+    private void unBindFromIMemeService() {
+        if (boundToIMemeService) {
+            unbindService(serviceConnection);
+            boundToIMemeService = false;
+        }
+    }
+
+    // # # # UTILITY FUNCTIONS # # #
     private void initiateTestButton() {
         testButton = findViewById(R.id.button2);
         testButton.setOnClickListener(
@@ -104,6 +122,30 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+    }
+
+    // # # # onFunctions # # #
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        // Make sure Service is running.
+        startIMemeService();
+        setupConnectionToIMemeService();
+        bindToIMemeService();
+
+        initiateDrawerMenu();
+
+        initiateTestButton();
+
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unBindFromIMemeService();
     }
 
     @Override
@@ -165,38 +207,4 @@ public class MainActivity extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
-
-    // # # # SERVICE FUNCTIONALITY # # #
-
-    private void startIMemeService(){
-        startService(new Intent(MainActivity.this, IMemeService.class));
-    }
-
-    private void setupConnectionToIMemeService() {
-        serviceConnection = new ServiceConnection() {
-            public void onServiceConnected(ComponentName className, IBinder service) {
-                iMemeService = ((IMemeService.IMemeUpdateServiceBinder) service).getService();
-                Log.d(LOG_ID, "iMeme service connected.");
-            }
-
-            public void onServiceDisconnected(ComponentName className) {
-                iMemeService = null;
-                Log.d(LOG_ID, "iMeme service disconnected.");
-            }
-        };
-    }
-    void bindToStockService() {
-        Intent intent = new Intent(MainActivity.this, IMemeService.class);
-        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
-        boundToIMemeService = true;
-    }
-
-    void unBindFromStockService() {
-        if (boundToIMemeService) {
-            unbindService(serviceConnection);
-            boundToIMemeService = false;
-        }
-    }
-
-    // # # # onFunctions # # #
 }
