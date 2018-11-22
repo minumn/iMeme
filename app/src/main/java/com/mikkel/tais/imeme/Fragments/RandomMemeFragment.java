@@ -39,6 +39,7 @@ public class RandomMemeFragment extends Fragment {
     private RandomMemeViewModel mViewModel;
     private ImageView randomMemeImage;
     private Button backBtn, refreshMemeBtn;
+    private boolean savedState = false;
 
     private RequestQueue volleyQueue;
     private BroadcastReceiver broadcastDataUpdatedReceiver;
@@ -63,6 +64,10 @@ public class RandomMemeFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
         mViewModel = ViewModelProviders.of(this).get(RandomMemeViewModel.class);
         // TODO: Use the ViewModel
+
+        if (savedInstanceState != null){
+            savedState = true;
+        }
 
         initiateVariables();
         setButtonFunctionality();
@@ -118,7 +123,11 @@ public class RandomMemeFragment extends Fragment {
             public void onServiceConnected(ComponentName className, IBinder service) {
                 iMemeService = ((IMemeService.IMemeUpdateServiceBinder) service).getService();
                 Log.d(LOG_ID, "iMeme service connected.");
-                iMemeService.requestRandomMeme();
+                if(!savedState) {
+                    iMemeService.requestRandomMeme();
+                } else {
+                    randomMemeImage.setImageBitmap(iMemeService.getRandomMeme());
+                }
             }
 
             public void onServiceDisconnected(ComponentName className) {

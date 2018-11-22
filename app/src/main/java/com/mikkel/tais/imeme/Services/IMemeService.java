@@ -40,10 +40,10 @@ public class IMemeService extends Service {
 
 
     // Volley stuff
-    private RequestQueue volleyQueue;// = Volley.newRequestQueue(this);
+    private RequestQueue volleyQueue;
 
     // Notification stuff
-    NotificationManagerCompat notificationManager;// = NotificationManagerCompat.from(this);
+    NotificationManagerCompat notificationManager;
     private static final int NOTIFICATION_ID = 101;
 
     // # # # Setup functions # # #
@@ -58,9 +58,7 @@ public class IMemeService extends Service {
         }
     }
 
-
     // # # # onFunctions # # #
-
     @Override
     //very important! return your IBinder (your custom Binder)
     public IBinder onBind(Intent intent) {
@@ -89,9 +87,7 @@ public class IMemeService extends Service {
         super.onDestroy();
     }
 
-
     // # # # Functionality functions # # #
-
     public Bitmap getRandomMeme(){
         return randomBillMeme;
     }
@@ -127,7 +123,6 @@ public class IMemeService extends Service {
     }
 
     // # # # Notifications # # #
-
     // REF: https://developer.android.com/training/notify-user/build-notification
     private void notifyUserAboutNewMeme() {
         // TODO: I think this will start MainActivity when pressing notification. Should be changed to randomBillMeme later.
@@ -173,16 +168,4 @@ public class IMemeService extends Service {
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
-    public void registerBroadcast(BroadcastReceiver broadcastDataUpdatedReceiver){
-        Log.d(LOG_ID, "registering receivers");
-
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(BROADCAST_NEW_BILL_MEME_AVAILABLE);
-        LocalBroadcastManager.getInstance(this).registerReceiver(broadcastDataUpdatedReceiver, filter);
-    }
-
-    public void unRegisterBroadcast(BroadcastReceiver broadcastDataUpdatedReceiver){
-        Log.d(LOG_ID, "unregistering receivers");
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastDataUpdatedReceiver);
-    }
 }
