@@ -25,6 +25,9 @@ import com.android.volley.toolbox.Volley;
 import com.mikkel.tais.imeme.MainActivity;
 import com.mikkel.tais.imeme.R;
 
+import java.util.Calendar;
+import java.util.Date;
+
 /**
  * This Service is supposed to handle URL calls getting Memes as well as nofitications for the user.
  * The Service should be persistent so it can send notifications when the app is not open.
@@ -37,7 +40,8 @@ public class IMemeService extends Service {
     private final IBinder binder = new IMemeUpdateServiceBinder();
     private static final String LOG_ID = "iMemeService_log";
     private Bitmap randomBillMeme;
-
+    private int randomBillMemesSeen;
+    Date dateFirstUsed;
 
     // Volley stuff
     private RequestQueue volleyQueue;
@@ -73,13 +77,22 @@ public class IMemeService extends Service {
         // Init stuff
         volleyQueue = Volley.newRequestQueue(this);
         notificationManager = NotificationManagerCompat.from(this);
+        loadStatsVariables();
 
         // Very important on Android 8.0 and higher to create notificationChannel!
         createNotificationChannel();
         notifyUserAboutNewMeme();
+    }
 
-        // For testing
-        //getRandomMeme();
+    private void loadStatsVariables() {
+        // TODO: Load variables from savedPreferences
+        boolean firstTimeUsed = true;
+        if (firstTimeUsed) {
+            dateFirstUsed=Calendar.getInstance().getTime();
+            randomBillMemesSeen = 0;
+        } else {
+            // LOAD FROM PREFERENCES
+        }
     }
 
     @Override
@@ -166,6 +179,7 @@ public class IMemeService extends Service {
         Intent intent = new Intent(BROADCAST_NEW_BILL_MEME_AVAILABLE);
         intent.putExtra(BROADCAST_RESULT, result);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+        randomBillMemesSeen += 1;
     }
 
 }
