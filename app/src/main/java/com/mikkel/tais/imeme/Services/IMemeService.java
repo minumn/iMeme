@@ -33,15 +33,20 @@ import java.util.Date;
  * The Service should be persistent so it can send notifications when the app is not open.
  */
 public class IMemeService extends Service {
-
+    // TODO: Make Service persistent
     private static final String CHANNEL_ID = "IMemeServiceNotification";
     public static final String BROADCAST_RESULT = "broadcast_result";
     public static final String BROADCAST_NEW_BILL_MEME_AVAILABLE = "broadcast_new_bill_meme_available";
     private final IBinder binder = new IMemeUpdateServiceBinder();
     private static final String LOG_ID = "iMemeService_log";
     private Bitmap randomBillMeme;
+
+    // Stats variable
     private int randomBillMemesSeen;
-    Date dateFirstUsed;
+    private Date dateFirstUsed;
+    private int totalMemesSaved;
+    private int totalMemesShared;
+    // Time spend watching memes?
 
     // Volley stuff
     private RequestQueue volleyQueue;
@@ -90,6 +95,8 @@ public class IMemeService extends Service {
         if (firstTimeUsed) {
             dateFirstUsed=Calendar.getInstance().getTime();
             randomBillMemesSeen = 0;
+            totalMemesSaved = 0;
+            totalMemesShared = 0;
         } else {
             // LOAD FROM PREFERENCES
         }
@@ -182,4 +189,20 @@ public class IMemeService extends Service {
         randomBillMemesSeen += 1;
     }
 
+    // # # # Functions for StatsActivity # # #
+    public Date getDateFirstUsed() {
+        return dateFirstUsed;
+    }
+
+    public int getRandomBillMemesSeen() {
+        return randomBillMemesSeen;
+    }
+
+    public int getTotalMemesSaved() {
+        return totalMemesSaved;
+    }
+
+    public int getTotalMemesShared() {
+        return totalMemesShared;
+    }
 }
