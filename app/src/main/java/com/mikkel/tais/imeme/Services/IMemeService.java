@@ -34,6 +34,8 @@ import java.util.Date;
  */
 public class IMemeService extends Service {
     // TODO: Make Service persistent
+    // TODO: Make Notifications based on user preferences
+
     private static final String CHANNEL_ID = "IMemeServiceNotification";
     public static final String BROADCAST_RESULT = "broadcast_result";
     public static final String BROADCAST_NEW_BILL_MEME_AVAILABLE = "broadcast_new_bill_meme_available";
@@ -46,7 +48,10 @@ public class IMemeService extends Service {
     private Date dateFirstUsed;
     private int totalMemesSaved;
     private int totalMemesShared;
-    // Time spend watching memes?
+    /* Time spend watching memes? Much harder to impl.
+        Maybe some time variable which is updated based on some activity lifetime?
+        e.g onCreate -> timeStarted. onDestroy updates with timeStarted minus timeNow and save to preferences
+    */
 
     // Volley stuff
     private RequestQueue volleyQueue;
