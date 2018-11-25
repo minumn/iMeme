@@ -1,15 +1,24 @@
 package com.mikkel.tais.imeme;
 
+import android.Manifest;
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.provider.MediaStore;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -27,9 +36,7 @@ import com.mikkel.tais.imeme.Fragments.RandomMemeFragment;
 import com.mikkel.tais.imeme.Services.IMemeService;
 
 // REF: This class have been made using the default of Android Studio and previous assignments of ours.
-public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
-
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private static final String LOG_ID = "MainActivity_log";
     private static final int SETTINGS_REQ = 102;
     Button testButton;
@@ -64,55 +71,44 @@ public class MainActivity extends AppCompatActivity
                     @Override
                     public void onClick(View v) {
                         Toast.makeText(MainActivity.this, "Button clicked!", Toast.LENGTH_SHORT).show();
-
                     }
                 }
         );
     }
 
     private void setFragmentView(Fragment fragment) {
-        if( findViewById(R.id.fragment_container) != null ) {
+        if (findViewById(R.id.fragment_container) != null) {
 
             FragmentTransaction fragmentTransaction = getSupportFragmentManager()
                     .beginTransaction()
                     .replace(R.id.fragment_container, fragment);
 
             // TODO: Any way to check what fragment is currently shown to prevent the user from opening the same multiple times?
-            fragmentTransaction.addToBackStack(null)
-                    .commit();
+            fragmentTransaction.addToBackStack(null).commit();
         }
     }
 
     private void initiateDrawerMenu() {
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
     }
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-
             super.onBackPressed();
         }
     }
@@ -121,6 +117,7 @@ public class MainActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
+
         return true;
     }
 
@@ -135,40 +132,34 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.action_settings) {
             // TODO: Implement onActivityResult?
             startActivityForResult(new Intent(MainActivity.this, SettingsActivity.class), SETTINGS_REQ);
+
             return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         // Handle navigation view item clicks here.
-        int id = item.getItemId();
-
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_randomBillMeme) {
-            setFragmentView(randomMemeFragment);
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
+        switch (item.getItemId()) {
+            case R.id.nav_randomBillMeme:
+                setFragmentView(randomMemeFragment);
+                break;
+            case R.id.nav_gallery:
+                Intent intent = new Intent(Intent.ACTION_VIEW, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                startActivity(intent);
         }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
+
         return true;
     }
 
     // # # # SERVICE FUNCTIONALITY # # #
 
-    private void startIMemeService(){
+    private void startIMemeService() {
         startService(new Intent(MainActivity.this, IMemeService.class));
     }
 
@@ -185,18 +176,21 @@ public class MainActivity extends AppCompatActivity
             }
         };
     }
-    void bindToStockService() {
+
+    public void bindToiMemeService() {
         Intent intent = new Intent(MainActivity.this, IMemeService.class);
         bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
         boundToIMemeService = true;
     }
 
-    void unBindFromStockService() {
+    public void unbindFromiMemeService() {
         if (boundToIMemeService) {
             unbindService(serviceConnection);
             boundToIMemeService = false;
         }
     }
 
-    // # # # onFunctions # # #
+    public void saveImageToStorage(Bitmap source, String title, String description) {
+        iMemeService.saveImageToStorage(getContentResolver(), source, title, description);
+    }
 }

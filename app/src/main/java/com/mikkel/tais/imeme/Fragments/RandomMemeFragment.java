@@ -1,11 +1,21 @@
 package com.mikkel.tais.imeme.Fragments;
 
+import android.Manifest;
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,13 +28,16 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageRequest;
 import com.android.volley.toolbox.Volley;
+import com.mikkel.tais.imeme.CapturePhotoUtils;
+import com.mikkel.tais.imeme.MainActivity;
 import com.mikkel.tais.imeme.R;
 
 public class RandomMemeFragment extends Fragment {
 
     private RandomMemeViewModel mViewModel;
     private ImageView randomMemeImage;
-    private Button backBtn, refreshMemeBtn;
+    private Button backBtn, refreshMemeBtn, btnSave;
+    private Bitmap currentMeme;
 
     private RequestQueue volleyQueue;
 
@@ -71,6 +84,63 @@ public class RandomMemeFragment extends Fragment {
                     }
                 }
         );
+
+        btnSave.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //TODO: Save image from MainActivity through service
+                if (checkPermissionWRITE_EXTERNAL_STORAGE(getContext())) {
+                    CapturePhotoUtils.insertImage(getActivity().getContentResolver(), currentMeme, "hej", "dav");
+                }
+            }
+        });
+    }
+
+    public static final int WRITE_EXTERNAL_STORAGE_REQ = 134;
+
+    // Permission checker and showDialog from https://stackoverflow.com/questions/37672338/java-lang-securityexception-permission-denial-reading-com-android-providers-me
+    public boolean checkPermissionWRITE_EXTERNAL_STORAGE(final Context context) {
+        int currentAPIVersion = Build.VERSION.SDK_INT;
+
+        if (currentAPIVersion >= android.os.Build.VERSION_CODES.M) {
+            if (ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(
+                        (Activity) context,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    showDialog("External storage", context, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                } else {
+                    ActivityCompat.requestPermissions(
+                            (Activity) context,
+                            new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                            WRITE_EXTERNAL_STORAGE_REQ);
+                }
+
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            return true;
+        }
+    }
+
+    public void showDialog(final String msg, final Context context, final String permission) {
+        AlertDialog.Builder alertBuilder = new AlertDialog.Builder(context);
+        alertBuilder.setCancelable(true);
+        alertBuilder.setTitle("Permission necessary");
+        alertBuilder.setMessage(msg + " permission is necessary");
+        alertBuilder.setPositiveButton(android.R.string.yes,
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        ActivityCompat.requestPermissions((Activity) context,
+                                new String[]{permission},
+                                WRITE_EXTERNAL_STORAGE_REQ);
+                    }
+                });
+        AlertDialog alert = alertBuilder.create();
+        alert.show();
     }
 
     private void initiateVariables() {
@@ -78,6 +148,7 @@ public class RandomMemeFragment extends Fragment {
         volleyQueue = Volley.newRequestQueue(getContext());
         backBtn = getActivity().findViewById(R.id.backBtn);
         refreshMemeBtn = getActivity().findViewById(R.id.newMemeBtn);
+        btnSave = getActivity().findViewById(R.id.btnSaveBill);
 
         // Set default picture
         if (randomMemeImage != null) {
@@ -98,6 +169,7 @@ public class RandomMemeFragment extends Fragment {
                     public void onResponse(Bitmap response) {
                         // TODO: Do something with response! Maybe save it locally and send a broadcast with link.
                         randomMemeImage.setImageBitmap(response);
+                        currentMeme = response;
                     }
                 },
                 0, // Image width

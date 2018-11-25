@@ -4,6 +4,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Binder;
@@ -13,12 +14,14 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageRequest;
 import com.android.volley.toolbox.Volley;
+import com.mikkel.tais.imeme.CapturePhotoUtils;
 import com.mikkel.tais.imeme.MainActivity;
 import com.mikkel.tais.imeme.R;
 
@@ -114,6 +117,12 @@ public class IMemeService extends Service {
                 }
         );
         volleyQueue.add(imageRequest);
+    }
+
+    public void saveImageToStorage(ContentResolver cr, Bitmap source, String title, String description) {
+        String url = CapturePhotoUtils.insertImage(cr, source, title, description);
+
+        Toast.makeText(this, url, Toast.LENGTH_SHORT).show();
     }
 
 
