@@ -1,34 +1,26 @@
 package com.mikkel.tais.imeme;
 
-import android.Manifest;
-import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.content.ContextCompat;
-import android.util.Log;
-import android.view.View;
-import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -43,27 +35,45 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     // Stuff for IMeme Service
     private ServiceConnection serviceConnection;
-    private IMemeService iMemeService;
+    public IMemeService iMemeService;
     private boolean boundToIMemeService = false;
 
     // Fragment stuff
     RandomMemeFragment randomMemeFragment = new RandomMemeFragment();
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        // Make sure Service is running.
-        startIMemeService();
-
-        initiateDrawerMenu();
-
-        initiateTestButton();
-
-
+    // # # # SERVICE FUNCTIONALITY # # #
+    private void startIMemeService() {
+        startService(new Intent(MainActivity.this, IMemeService.class));
     }
 
+    private void setupConnectionToIMemeService() {
+        serviceConnection = new ServiceConnection() {
+            public void onServiceConnected(ComponentName className, IBinder service) {
+                iMemeService = ((IMemeService.IMemeUpdateServiceBinder) service).getService();
+                Log.d(LOG_ID, "iMeme service connected.");
+            }
+
+            public void onServiceDisconnected(ComponentName className) {
+                iMemeService = null;
+                Log.d(LOG_ID, "iMeme service disconnected.");
+            }
+        };
+    }
+
+    private void bindToIMemeService() {
+        Intent intent = new Intent(MainActivity.this, IMemeService.class);
+        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
+        boundToIMemeService = true;
+    }
+
+    private void unBindFromIMemeService() {
+        if (boundToIMemeService) {
+            unbindService(serviceConnection);
+            boundToIMemeService = false;
+        }
+    }
+
+    // # # # UTILITY FUNCTIONS # # #
     private void initiateTestButton() {
         testButton = findViewById(R.id.button2);
         testButton.setOnClickListener(
@@ -100,6 +110,28 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+    }
+
+    // # # # onFunctions # # #
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        // Make sure Service is running.
+        startIMemeService();
+        setupConnectionToIMemeService();
+        bindToIMemeService();
+
+        initiateDrawerMenu();
+
+        initiateTestButton();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unBindFromIMemeService();
     }
 
     @Override
@@ -155,39 +187,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         drawer.closeDrawer(GravityCompat.START);
 
         return true;
-    }
-
-    // # # # SERVICE FUNCTIONALITY # # #
-
-    private void startIMemeService() {
-        startService(new Intent(MainActivity.this, IMemeService.class));
-    }
-
-    private void setupConnectionToIMemeService() {
-        serviceConnection = new ServiceConnection() {
-            public void onServiceConnected(ComponentName className, IBinder service) {
-                iMemeService = ((IMemeService.IMemeUpdateServiceBinder) service).getService();
-                Log.d(LOG_ID, "iMeme service connected.");
-            }
-
-            public void onServiceDisconnected(ComponentName className) {
-                iMemeService = null;
-                Log.d(LOG_ID, "iMeme service disconnected.");
-            }
-        };
-    }
-
-    public void bindToiMemeService() {
-        Intent intent = new Intent(MainActivity.this, IMemeService.class);
-        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
-        boundToIMemeService = true;
-    }
-
-    public void unbindFromiMemeService() {
-        if (boundToIMemeService) {
-            unbindService(serviceConnection);
-            boundToIMemeService = false;
-        }
     }
 
     public void saveImageToStorage(Bitmap source, String title, String description) {

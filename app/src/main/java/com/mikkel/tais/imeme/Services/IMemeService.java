@@ -12,6 +12,7 @@ import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -25,22 +26,39 @@ import com.mikkel.tais.imeme.CapturePhotoUtils;
 import com.mikkel.tais.imeme.MainActivity;
 import com.mikkel.tais.imeme.R;
 
+import java.util.Calendar;
+import java.util.Date;
+
 /**
  * This Service is supposed to handle URL calls getting Memes as well as nofitications for the user.
  * The Service should be persistent so it can send notifications when the app is not open.
  */
 public class IMemeService extends Service {
+    // TODO: Make Service persistent
+    // TODO: Make Notifications based on user preferences
 
     private static final String CHANNEL_ID = "IMemeServiceNotification";
+    public static final String BROADCAST_RESULT = "broadcast_result";
+    public static final String BROADCAST_NEW_BILL_MEME_AVAILABLE = "broadcast_new_bill_meme_available";
     private final IBinder binder = new IMemeUpdateServiceBinder();
     private static final String LOG_ID = "iMemeService_log";
+    private Bitmap randomBillMeme;
 
+    // Stats variable
+    private int randomBillMemesSeen;
+    private Date dateFirstUsed;
+    private int totalMemesSaved;
+    private int totalMemesShared;
+    /* Time spend watching memes? Much harder to impl.
+        Maybe some time variable which is updated based on some activity lifetime?
+        e.g onCreate -> timeStarted. onDestroy updates with timeStarted minus timeNow and save to preferences
+    */
 
     // Volley stuff
-    private RequestQueue volleyQueue;// = Volley.newRequestQueue(this);
+    private RequestQueue volleyQueue;
 
     // Notification stuff
-    NotificationManagerCompat notificationManager;// = NotificationManagerCompat.from(this);
+    NotificationManagerCompat notificationManager;
     private static final int NOTIFICATION_ID = 101;
 
     // # # # Setup functions # # #
@@ -55,9 +73,7 @@ public class IMemeService extends Service {
         }
     }
 
-
     // # # # onFunctions # # #
-
     @Override
     //very important! return your IBinder (your custom Binder)
     public IBinder onBind(Intent intent) {
@@ -70,15 +86,26 @@ public class IMemeService extends Service {
         super.onCreate();
 
         // Init stuff
-        RequestQueue volleyQueue = Volley.newRequestQueue(this);
+        volleyQueue = Volley.newRequestQueue(this);
         notificationManager = NotificationManagerCompat.from(this);
+        loadStatsVariables();
 
         // Very important on Android 8.0 and higher to create notificationChannel!
         createNotificationChannel();
         notifyUserAboutNewMeme();
+    }
 
-        // For testing
-        //getRandomMeme();
+    private void loadStatsVariables() {
+        // TODO: Load variables from savedPreferences
+        boolean firstTimeUsed = true;
+        if (firstTimeUsed) {
+            dateFirstUsed=Calendar.getInstance().getTime();
+            randomBillMemesSeen = 0;
+            totalMemesSaved = 0;
+            totalMemesShared = 0;
+        } else {
+            // LOAD FROM PREFERENCES
+        }
     }
 
     @Override
@@ -86,13 +113,14 @@ public class IMemeService extends Service {
         super.onDestroy();
     }
 
-
     // # # # Functionality functions # # #
+    public Bitmap getRandomMeme(){
+        return randomBillMeme;
+    }
 
-    public void getRandomMeme(){
+    public void requestRandomMeme(){
         final String imageUrl = "https://belikebill.ga/billgen-API.php?default=1";
-
-        // TODO: Volley not tested!
+        // TODO: Should be in the service
         // REF: Inspiration found on https://android--examples.blogspot.com/2017/02/android-volley-image-request-example.html
         // TODO: Could look at above link how they save files.
 
@@ -102,7 +130,8 @@ public class IMemeService extends Service {
                     @Override
                     public void onResponse(Bitmap response) {
                         // TODO: Do something with response! Maybe save it locally and send a broadcast with link.
-
+                        randomBillMeme = response;
+                        broadcastNewBillMemeAvailable("");
                     }
                 },
                 0, // Image width
@@ -125,9 +154,7 @@ public class IMemeService extends Service {
         Toast.makeText(this, url, Toast.LENGTH_SHORT).show();
     }
 
-
     // # # # Notifications # # #
-
     // REF: https://developer.android.com/training/notify-user/build-notification
     private void notifyUserAboutNewMeme() {
         // TODO: I think this will start MainActivity when pressing notification. Should be changed to randomBillMeme later.
@@ -163,5 +190,31 @@ public class IMemeService extends Service {
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
         }
+    }
+
+    // # # # BROADCAST # # #
+    private void broadcastNewBillMemeAvailable(String result){
+        Log.d(LOG_ID, "Broadcasting new bill meme available.");
+        Intent intent = new Intent(BROADCAST_NEW_BILL_MEME_AVAILABLE);
+        intent.putExtra(BROADCAST_RESULT, result);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+        randomBillMemesSeen += 1;
+    }
+
+    // # # # Functions for StatsActivity # # #
+    public Date getDateFirstUsed() {
+        return dateFirstUsed;
+    }
+
+    public int getRandomBillMemesSeen() {
+        return randomBillMemesSeen;
+    }
+
+    public int getTotalMemesSaved() {
+        return totalMemesSaved;
+    }
+
+    public int getTotalMemesShared() {
+        return totalMemesShared;
     }
 }
