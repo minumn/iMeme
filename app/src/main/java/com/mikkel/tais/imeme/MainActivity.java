@@ -4,7 +4,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.MediaStore;
@@ -25,21 +24,23 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.mikkel.tais.imeme.Fragments.RandomMemeFragment;
+import com.mikkel.tais.imeme.Fragments.StatsFragment;
 import com.mikkel.tais.imeme.Services.IMemeService;
 
 // REF: This class have been made using the default of Android Studio and previous assignments of ours.
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private static final String LOG_ID = "MainActivity_log";
     private static final int SETTINGS_REQ = 102;
-    Button testButton;
+    private Button testButton;
 
     // Stuff for IMeme Service
-    private ServiceConnection serviceConnection;
     public IMemeService iMemeService;
+    private ServiceConnection serviceConnection;
     private boolean boundToIMemeService = false;
 
     // Fragment stuff
-    RandomMemeFragment randomMemeFragment = new RandomMemeFragment();
+    private RandomMemeFragment randomMemeFragment = new RandomMemeFragment();
+    private StatsFragment statsFragment = new StatsFragment();
 
     // # # # SERVICE FUNCTIONALITY # # #
     private void startIMemeService() {
@@ -181,15 +182,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             case R.id.nav_gallery:
                 Intent intent = new Intent(Intent.ACTION_VIEW, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                 startActivity(intent);
+                break;
+            case R.id.nav_stats:
+                setFragmentView(statsFragment);
+                break;
         }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
 
         return true;
-    }
-
-    public void saveImageToStorage(Bitmap source, String title, String description) {
-        iMemeService.saveImageToStorage(getContentResolver(), source, title, description);
     }
 }

@@ -84,4 +84,12 @@
     <string name="next_meme">Next Meme</string>
     <string name="randommemeimage">randomMemeImage</string>
     <string name="btn_save_bill">Save</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="lbl_total_BLB">Total number of Be Like Bill seen:</string>
+    <string name="lbl_stats_header" >Stats</string>
+    <string name="lbl_total_blb_saved" >Total number of Be Like Bill saved:</string>
+    <string name="lbl_total_blb_shared">Total number of Be Like Bill shared:</string>
+    <string name="lbl_first_usage">First usage:</string>
 </resources>

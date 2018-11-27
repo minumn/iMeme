@@ -1,17 +1,26 @@
 package com.mikkel.tais.imeme.Services;
 
+import android.Manifest;
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ContentResolver;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.ImageView;
@@ -24,10 +33,19 @@ import com.android.volley.toolbox.ImageRequest;
 import com.android.volley.toolbox.Volley;
 import com.mikkel.tais.imeme.CapturePhotoUtils;
 import com.mikkel.tais.imeme.MainActivity;
+import com.mikkel.tais.imeme.Models.StatsModel;
 import com.mikkel.tais.imeme.R;
 
 import java.util.Calendar;
 import java.util.Date;
+
+import static com.mikkel.tais.imeme.Models.StatsModel.SHARED_PREFS_KEY_BOOL_FIRST_TIME;
+import static com.mikkel.tais.imeme.Models.StatsModel.SHARED_PREFS_KEY_INT_BLB_SAVED;
+import static com.mikkel.tais.imeme.Models.StatsModel.SHARED_PREFS_KEY_INT_BLB_SEEN;
+import static com.mikkel.tais.imeme.Models.StatsModel.SHARED_PREFS_KEY_INT_BLB_SHARED;
+import static com.mikkel.tais.imeme.Models.StatsModel.SHARED_PREFS_KEY_STRING_FIRST_TIME;
+import static com.mikkel.tais.imeme.Models.StatsModel.SHARED_PREFS_NAME;
+import static java.security.AccessController.getContext;
 
 /**
  * This Service is supposed to handle URL calls getting Memes as well as nofitications for the user.
@@ -40,19 +58,20 @@ public class IMemeService extends Service {
     private static final String CHANNEL_ID = "IMemeServiceNotification";
     public static final String BROADCAST_RESULT = "broadcast_result";
     public static final String BROADCAST_NEW_BILL_MEME_AVAILABLE = "broadcast_new_bill_meme_available";
+    public static final int WRITE_EXTERNAL_STORAGE_REQ = 134;
     private final IBinder binder = new IMemeUpdateServiceBinder();
     private static final String LOG_ID = "iMemeService_log";
     private Bitmap randomBillMeme;
 
     // Stats variable
-    private int randomBillMemesSeen;
-    private Date dateFirstUsed;
-    private int totalMemesSaved;
-    private int totalMemesShared;
+    private int totalBLBSeen;
+    private int totalBLBSaved;
+    private int totalBLBShared;
     /* Time spend watching memes? Much harder to impl.
         Maybe some time variable which is updated based on some activity lifetime?
         e.g onCreate -> timeStarted. onDestroy updates with timeStarted minus timeNow and save to preferences
     */
+    public SharedPreferences prefs;
 
     // Volley stuff
     private RequestQueue volleyQueue;
@@ -88,6 +107,7 @@ public class IMemeService extends Service {
         // Init stuff
         volleyQueue = Volley.newRequestQueue(this);
         notificationManager = NotificationManagerCompat.from(this);
+        setupSharedPrefs();
         loadStatsVariables();
 
         // Very important on Android 8.0 and higher to create notificationChannel!
@@ -96,16 +116,15 @@ public class IMemeService extends Service {
     }
 
     private void loadStatsVariables() {
-        // TODO: Load variables from savedPreferences
-        boolean firstTimeUsed = true;
-        if (firstTimeUsed) {
-            dateFirstUsed=Calendar.getInstance().getTime();
-            randomBillMemesSeen = 0;
-            totalMemesSaved = 0;
-            totalMemesShared = 0;
-        } else {
-            // LOAD FROM PREFERENCES
+        if (prefs.getBoolean(SHARED_PREFS_KEY_BOOL_FIRST_TIME, true)) {
+            setSharedPref(SHARED_PREFS_KEY_BOOL_FIRST_TIME, false);
+            setSharedPref(SHARED_PREFS_KEY_STRING_FIRST_TIME, Calendar.getInstance().getTime().toLocaleString());
         }
+
+        StatsModel stats = getStatsFromSP();
+        totalBLBSeen = stats.getTotalBLBSeen();
+        totalBLBSaved = stats.getTotalBLBSaved();
+        totalBLBShared = stats.getTotalBLBShared();
     }
 
     @Override
@@ -114,15 +133,13 @@ public class IMemeService extends Service {
     }
 
     // # # # Functionality functions # # #
-    public Bitmap getRandomMeme(){
+    public Bitmap getRandomMeme() {
         return randomBillMeme;
     }
 
-    public void requestRandomMeme(){
+    // REF: Inspiration found on https://android--examples.blogspot.com/2017/02/android-volley-image-request-example.html
+    public void requestRandomMeme() {
         final String imageUrl = "https://belikebill.ga/billgen-API.php?default=1";
-        // TODO: Should be in the service
-        // REF: Inspiration found on https://android--examples.blogspot.com/2017/02/android-volley-image-request-example.html
-        // TODO: Could look at above link how they save files.
 
         ImageRequest imageRequest = new ImageRequest(
                 imageUrl,
@@ -145,13 +162,68 @@ public class IMemeService extends Service {
                     }
                 }
         );
+
         volleyQueue.add(imageRequest);
     }
 
-    public void saveImageToStorage(ContentResolver cr, Bitmap source, String title, String description) {
-        String url = CapturePhotoUtils.insertImage(cr, source, title, description);
+    public void saveImageToStorage(Bitmap source, String title) {
+        //TODO: Externalizeeeee!
+        String url = "Image not saved";
+
+        if (checkPermissionWRITE_EXTERNAL_STORAGE(this)) {
+            CapturePhotoUtils.insertImage(getContentResolver(), source, title, "Image generated from iMeme");
+            url = "Image saved";
+
+            totalBLBSaved += 1;
+            setSharedPref(SHARED_PREFS_KEY_INT_BLB_SAVED, totalBLBSaved);
+        }
 
         Toast.makeText(this, url, Toast.LENGTH_SHORT).show();
+    }
+
+    // Permission checker and showDialog from https://stackoverflow.com/questions/37672338/java-lang-securityexception-permission-denial-reading-com-android-providers-me
+    private boolean checkPermissionWRITE_EXTERNAL_STORAGE(final Context context) {
+        int currentAPIVersion = Build.VERSION.SDK_INT;
+
+        if (currentAPIVersion >= android.os.Build.VERSION_CODES.M) {
+            if (ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(
+                        (Activity) context,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    showDialog("External storage", context, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                } else {
+                    ActivityCompat.requestPermissions(
+                            (Activity) context,
+                            new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                            WRITE_EXTERNAL_STORAGE_REQ);
+                }
+
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            return true;
+        }
+    }
+
+    private void showDialog(final String msg, final Context context, final String permission) {
+        AlertDialog.Builder alertBuilder = new AlertDialog.Builder(context);
+        alertBuilder.setCancelable(true);
+        alertBuilder.setTitle("Permission necessary");
+        alertBuilder.setMessage(msg + " permission is necessary");
+        alertBuilder.setPositiveButton(android.R.string.yes,
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        ActivityCompat.requestPermissions((Activity) context,
+                                new String[]{permission},
+                                WRITE_EXTERNAL_STORAGE_REQ);
+                    }
+                });
+        AlertDialog alert = alertBuilder.create();
+        alert.show();
     }
 
     // # # # Notifications # # #
@@ -182,9 +254,11 @@ public class IMemeService extends Service {
             // TODO: What is name and description?
             CharSequence name = "name"; //getString(R.string.channel_name);
             String description = "description"; //getString(R.string.channel_description);
+
             int importance = NotificationManager.IMPORTANCE_DEFAULT;
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
             channel.setDescription(description);
+
             // Register the channel with the system; you can't change the importance
             // or other notification behaviors after this
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
@@ -193,28 +267,46 @@ public class IMemeService extends Service {
     }
 
     // # # # BROADCAST # # #
-    private void broadcastNewBillMemeAvailable(String result){
+    private void broadcastNewBillMemeAvailable(String result) {
         Log.d(LOG_ID, "Broadcasting new bill meme available.");
         Intent intent = new Intent(BROADCAST_NEW_BILL_MEME_AVAILABLE);
         intent.putExtra(BROADCAST_RESULT, result);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
-        randomBillMemesSeen += 1;
+
+        totalBLBSeen += 1;
+        setSharedPref(SHARED_PREFS_KEY_INT_BLB_SEEN, totalBLBSeen);
     }
 
     // # # # Functions for StatsActivity # # #
-    public Date getDateFirstUsed() {
-        return dateFirstUsed;
+    private void setupSharedPrefs() {
+        prefs = getSharedPreferences(SHARED_PREFS_NAME, MODE_PRIVATE);
     }
 
-    public int getRandomBillMemesSeen() {
-        return randomBillMemesSeen;
+    public StatsModel getStatsFromSP() {
+        StatsModel stats = new StatsModel();
+
+        stats.setTotalBLBSeen(prefs.getInt(SHARED_PREFS_KEY_INT_BLB_SEEN, 0));
+        stats.setTotalBLBSaved(prefs.getInt(SHARED_PREFS_KEY_INT_BLB_SAVED, 0));
+        stats.setTotalBLBSaved(prefs.getInt(SHARED_PREFS_KEY_INT_BLB_SHARED, 0));
+
+        return stats;
     }
 
-    public int getTotalMemesSaved() {
-        return totalMemesSaved;
+    public String getFirstUsageFromSP() {
+        return prefs.getString(SHARED_PREFS_KEY_STRING_FIRST_TIME, null);
     }
 
-    public int getTotalMemesShared() {
-        return totalMemesShared;
+    public void setSharedPref(String key, Object value) {
+        SharedPreferences.Editor editor = prefs.edit();
+
+        if (value instanceof Integer) {
+            editor.putInt(key, (Integer) value);
+        } else if (value instanceof Boolean) {
+            editor.putBoolean(key, (Boolean) value);
+        } else if (value instanceof String) {
+            editor.putString(key, (String) value);
+        }
+
+        editor.apply();
     }
 }
