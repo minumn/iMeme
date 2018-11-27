@@ -7,7 +7,6 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -26,26 +25,26 @@ import android.util.Log;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.mikkel.tais.imeme.CapturePhotoUtils;
+import com.mikkel.tais.imeme.Utils.CapturePhotoUtils;
 import com.mikkel.tais.imeme.MainActivity;
-import com.mikkel.tais.imeme.Models.StatsModel;
+import com.mikkel.tais.imeme.Models.Stats;
 import com.mikkel.tais.imeme.R;
 
 import java.util.Calendar;
-import java.util.Date;
 
-import static com.mikkel.tais.imeme.Models.StatsModel.SHARED_PREFS_KEY_BOOL_FIRST_TIME;
-import static com.mikkel.tais.imeme.Models.StatsModel.SHARED_PREFS_KEY_INT_BLB_SAVED;
-import static com.mikkel.tais.imeme.Models.StatsModel.SHARED_PREFS_KEY_INT_BLB_SEEN;
-import static com.mikkel.tais.imeme.Models.StatsModel.SHARED_PREFS_KEY_INT_BLB_SHARED;
-import static com.mikkel.tais.imeme.Models.StatsModel.SHARED_PREFS_KEY_STRING_FIRST_TIME;
-import static com.mikkel.tais.imeme.Models.StatsModel.SHARED_PREFS_NAME;
-import static java.security.AccessController.getContext;
+import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_BOOL_FIRST_TIME;
+import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_INT_BLB_SAVED;
+import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_INT_BLB_SEEN;
+import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_INT_BLB_SHARED;
+import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_STRING_FIRST_TIME;
+import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_NAME;
 
 /**
  * This Service is supposed to handle URL calls getting Memes as well as nofitications for the user.
@@ -56,12 +55,20 @@ public class IMemeService extends Service {
     // TODO: Make Notifications based on user preferences
 
     private static final String CHANNEL_ID = "IMemeServiceNotification";
-    public static final String BROADCAST_RESULT = "broadcast_result";
     public static final String BROADCAST_NEW_BILL_MEME_AVAILABLE = "broadcast_new_bill_meme_available";
+    public static final String BROADCAST_LIST_OF_MEMES = "broadcast_list_of_memes";
+    public static final String BROADCAST_GENERATED_MEME = "broadcast_generated_meme";
+    public static final String BROADCAST_GENERATED_MEME_IMG = "broadcast_generated_meme_img";
+
+    public static final String BROADCAST_RESULT = "broadcast_result";
+    public static final String BROADCAST_MEME_LIST_RESULT = "broadcast_meme_list_result";
+    public static final String BROADCAST_GENERATED_MEME_RESULT = "broadcast_generated_meme_result";
+    public static final String BROADCAST_GENERATED_MEME_IMG_RESULT = "broadcast_generated_meme_img_result";
     public static final int WRITE_EXTERNAL_STORAGE_REQ = 134;
     private final IBinder binder = new IMemeUpdateServiceBinder();
     private static final String LOG_ID = "iMemeService_log";
     private Bitmap randomBillMeme;
+    private Bitmap generatedMeme;
 
     // Stats variable
     private int totalBLBSeen;
@@ -121,7 +128,7 @@ public class IMemeService extends Service {
             setSharedPref(SHARED_PREFS_KEY_STRING_FIRST_TIME, Calendar.getInstance().getTime().toLocaleString());
         }
 
-        StatsModel stats = getStatsFromSP();
+        Stats stats = getStatsFromSP();
         totalBLBSeen = stats.getTotalBLBSeen();
         totalBLBSaved = stats.getTotalBLBSaved();
         totalBLBShared = stats.getTotalBLBShared();
@@ -148,7 +155,73 @@ public class IMemeService extends Service {
                     public void onResponse(Bitmap response) {
                         // TODO: Do something with response! Maybe save it locally and send a broadcast with link.
                         randomBillMeme = response;
-                        broadcastNewBillMemeAvailable("");
+                        broadcastNewBillMemeAvailable("OK");
+                    }
+                },
+                0, // Image width
+                0, // Image height
+                ImageView.ScaleType.CENTER_CROP, // Image scale type
+                Bitmap.Config.RGB_565, //Image decode configuration
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        error.printStackTrace();
+                    }
+                }
+        );
+
+        volleyQueue.add(imageRequest);
+    }
+
+    // REF: https://developer.android.com/training/volley/simple
+    public void requestListOfMemes() {
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, "https://api.imgflip.com/get_memes",
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        broadcastListOfAvailableMemes(response);
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        broadcastListOfAvailableMemes(null);
+                    }
+                });
+
+        volleyQueue.add(stringRequest);
+    }
+
+    public void requestGeneratedMeme(String url) {
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        broadcastGeneratedMeme(response);
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        broadcastGeneratedMeme(null);
+                    }
+                });
+
+        volleyQueue.add(stringRequest);
+    }
+
+    public Bitmap getGeneratedMeme() {
+        return generatedMeme;
+    }
+
+    public void requestGeneratedMemeImg(String imageUrl) {
+        ImageRequest imageRequest = new ImageRequest(
+                imageUrl,
+                new Response.Listener<Bitmap>() {
+                    @Override
+                    public void onResponse(Bitmap response) {
+                        generatedMeme = response;
+                        broadcastGeneratedMemeImg("OK");
                     }
                 },
                 0, // Image width
@@ -268,7 +341,7 @@ public class IMemeService extends Service {
 
     // # # # BROADCAST # # #
     private void broadcastNewBillMemeAvailable(String result) {
-        Log.d(LOG_ID, "Broadcasting new bill meme available.");
+        Log.d(LOG_ID, "Broadcasting new bill meme available!");
         Intent intent = new Intent(BROADCAST_NEW_BILL_MEME_AVAILABLE);
         intent.putExtra(BROADCAST_RESULT, result);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
@@ -277,13 +350,38 @@ public class IMemeService extends Service {
         setSharedPref(SHARED_PREFS_KEY_INT_BLB_SEEN, totalBLBSeen);
     }
 
+    private void broadcastListOfAvailableMemes(String result) {
+        Log.d(LOG_ID, "Broadcasting list of available memes!");
+        Intent intent = new Intent(BROADCAST_LIST_OF_MEMES);
+        intent.putExtra(BROADCAST_MEME_LIST_RESULT, result);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
+
+    private void broadcastGeneratedMeme(String result) {
+        Log.d(LOG_ID, "Broadcasting list of available memes!");
+        Intent intent = new Intent(BROADCAST_GENERATED_MEME);
+        intent.putExtra(BROADCAST_GENERATED_MEME_RESULT, result);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
+
+    private void broadcastGeneratedMemeImg(String result) {
+        Log.d(LOG_ID, "Broadcasting generated meme!");
+        Intent intent = new Intent(BROADCAST_GENERATED_MEME_IMG);
+        intent.putExtra(BROADCAST_GENERATED_MEME_IMG_RESULT, result);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+
+        //TODO: update for generated meme
+        //totalBLBSeen += 1;
+        //setSharedPref(SHARED_PREFS_KEY_INT_BLB_SEEN, totalBLBSeen);
+    }
+
     // # # # Functions for StatsActivity # # #
     private void setupSharedPrefs() {
         prefs = getSharedPreferences(SHARED_PREFS_NAME, MODE_PRIVATE);
     }
 
-    public StatsModel getStatsFromSP() {
-        StatsModel stats = new StatsModel();
+    public Stats getStatsFromSP() {
+        Stats stats = new Stats();
 
         stats.setTotalBLBSeen(prefs.getInt(SHARED_PREFS_KEY_INT_BLB_SEEN, 0));
         stats.setTotalBLBSaved(prefs.getInt(SHARED_PREFS_KEY_INT_BLB_SAVED, 0));

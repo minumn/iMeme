@@ -6,17 +6,17 @@
     <!--<group android:checkableBehavior="single">-->
     <group>
         <item
-            android:id="@+id/nav_camera"
+            android:id="@+id/nav_randomBillMeme"
+            android:icon="@drawable/ic_menu_slideshow"
+            android:title="Random Bill Memes" />
+        <item
+            android:id="@+id/nav_memeGen"
             android:icon="@drawable/ic_menu_camera"
-            android:title="Import" />
+            android:title="Meme Generator" />
         <item
             android:id="@+id/nav_gallery"
             android:icon="@drawable/ic_menu_gallery"
             android:title="Gallery" />
-        <item
-            android:id="@+id/nav_randomBillMeme"
-            android:icon="@drawable/ic_menu_slideshow"
-            android:title="Random Bill Memes" />
         <item
             android:id="@+id/nav_stats"
             android:icon="@drawable/ic_menu_manage"

@@ -1,13 +1,11 @@
 package com.mikkel.tais.imeme.Fragments;
 
-import android.arch.lifecycle.ViewModelProviders;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
@@ -18,53 +16,52 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.ImageView;
+import android.widget.AdapterView;
+import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.Toast;
 
-import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.Volley;
+import com.mikkel.tais.imeme.MemeResultActivity;
+import com.mikkel.tais.imeme.Models.Meme;
+import com.mikkel.tais.imeme.Models.Stats;
 import com.mikkel.tais.imeme.R;
 import com.mikkel.tais.imeme.Services.IMemeService;
+import com.mikkel.tais.imeme.Utils.MemeAdaptor;
+import com.mikkel.tais.imeme.Utils.MemeJsonParser;
 
+import java.util.List;
+
+import static com.mikkel.tais.imeme.MemeResultActivity.EXTRA_MEME_ID;
+import static com.mikkel.tais.imeme.MemeResultActivity.EXTRA_MEME_T1;
+import static com.mikkel.tais.imeme.MemeResultActivity.EXTRA_MEME_T2;
+import static com.mikkel.tais.imeme.Services.IMemeService.BROADCAST_LIST_OF_MEMES;
+import static com.mikkel.tais.imeme.Services.IMemeService.BROADCAST_MEME_LIST_RESULT;
 import static com.mikkel.tais.imeme.Services.IMemeService.BROADCAST_NEW_BILL_MEME_AVAILABLE;
 
-public class RandomMemeFragment extends Fragment {
-
-    private static final String LOG_ID = "RandomMemeFragment_log";
-    private RandomMemeViewModel mViewModel;
-    private ImageView randomMemeImage;
-    private Button backBtn, refreshMemeBtn, btnSave;
-    private Bitmap currentMeme;
-    private boolean savedState = false;
-
-    private RequestQueue volleyQueue;
-    private BroadcastReceiver broadcastDataUpdatedReceiver;
-
-    // Stuff for IMeme Service
-    private ServiceConnection serviceConnection;
+public class MemeGeneratorFragment extends Fragment {
     public IMemeService iMemeService;
     private boolean boundToIMemeService = false;
+    private ServiceConnection serviceConnection;
+    private BroadcastReceiver broadcastDataUpdatedReceiver;
+
+    private static final String LOG_ID = "MemeGenFrag_log";
+    private EditText edtTopText;
+    private EditText edtBottomText;
+    private ListView lstMemes;
+    private List<Meme> memes;
+    private MemeAdaptor adaptor;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.random_meme_fragment, container, false);
+        return inflater.inflate(R.layout.fragment_meme_generator, container, false);
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        // TODO: Use the ViewModel
-        mViewModel = ViewModelProviders.of(this).get(RandomMemeViewModel.class);
-
-        if (savedInstanceState != null) {
-            savedState = true;
-        }
-
         initiateVariables();
-        setButtonFunctionality();
         setupConnectionToIMemeService();
         setupBroadcaster();
     }
@@ -77,48 +74,27 @@ public class RandomMemeFragment extends Fragment {
         unRegisterBroadcast(broadcastDataUpdatedReceiver);
     }
 
+    private void goToResult(Meme meme) {
+        String topText = edtTopText.getText().toString().trim();
+        String bottomText = edtBottomText.getText().toString().trim();
+
+        if (topText.equals("") || bottomText.equals("")) {
+            //TODO: Externalizeeeee!
+            Toast.makeText(getActivity(), "Fill out the text fields", Toast.LENGTH_SHORT).show();
+        } else {
+            Intent intent = new Intent(getContext(), MemeResultActivity.class);
+            intent.putExtra(EXTRA_MEME_ID, meme.getId());
+            intent.putExtra(EXTRA_MEME_T1, topText);
+            intent.putExtra(EXTRA_MEME_T2, bottomText);
+
+            startActivity(intent);
+        }
+    }
+
     private void initiateVariables() {
-        volleyQueue = Volley.newRequestQueue(getContext());
-
-        randomMemeImage = getActivity().findViewById(R.id.randomMemeImageView);
-        refreshMemeBtn = getActivity().findViewById(R.id.newMemeBtn);
-        backBtn = getActivity().findViewById(R.id.backBtn);
-        btnSave = getActivity().findViewById(R.id.btnSaveBill);
-    }
-
-    private void setButtonFunctionality() {
-        backBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(getActivity(), "Back button clicked!", Toast.LENGTH_SHORT).show();
-                getActivity().getSupportFragmentManager().popBackStack();
-            }
-        });
-
-        refreshMemeBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(getActivity(), "Refresh meme clicked!", Toast.LENGTH_SHORT).show();
-                // TODO: Should prob use ViewModel?
-                iMemeService.requestRandomMeme();
-            }
-        });
-
-        btnSave.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                int number = iMemeService.getStatsFromSP().getTotalBLBSaved();
-                String title = "BeLikeBill_" + number;
-
-                iMemeService.saveImageToStorage(currentMeme, title);
-            }
-        });
-    }
-
-    private void updateMeme(Bitmap meme) {
-        randomMemeImage.setImageBitmap(meme);
-        currentMeme = meme;
-        getActivity().findViewById(R.id.loadingPanelBill).setVisibility(View.GONE);
+        edtTopText = getActivity().findViewById(R.id.edtTopText);
+        edtBottomText = getActivity().findViewById(R.id.edtBottomText);
+        lstMemes = getActivity().findViewById(R.id.lstMemes);
     }
 
     // # # # SERVICE FUNCTIONALITY # # #
@@ -128,11 +104,19 @@ public class RandomMemeFragment extends Fragment {
                 iMemeService = ((IMemeService.IMemeUpdateServiceBinder) service).getService();
                 Log.d(LOG_ID, "iMeme service connected.");
 
-                if (!savedState) {
-                    iMemeService.requestRandomMeme();
-                } else {
-                    updateMeme(iMemeService.getRandomMeme());
-                }
+                iMemeService.requestListOfMemes();
+
+                adaptor = new MemeAdaptor(getContext(), memes);
+                lstMemes.setAdapter(adaptor);
+                lstMemes.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                        Meme meme = memes.get(position);
+                        if (meme != null) {
+                            goToResult(meme);
+                        }
+                    }
+                });
             }
 
             public void onServiceDisconnected(ComponentName className) {
@@ -162,7 +146,7 @@ public class RandomMemeFragment extends Fragment {
         Log.d(LOG_ID, "registering receivers");
 
         IntentFilter filter = new IntentFilter();
-        filter.addAction(BROADCAST_NEW_BILL_MEME_AVAILABLE);
+        filter.addAction(BROADCAST_LIST_OF_MEMES);
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(broadcastDataUpdatedReceiver, filter);
     }
 
@@ -175,14 +159,14 @@ public class RandomMemeFragment extends Fragment {
         broadcastDataUpdatedReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                String result = intent.getStringExtra(IMemeService.BROADCAST_RESULT);
+                String result = intent.getStringExtra(BROADCAST_MEME_LIST_RESULT);
 
                 if (result == null) {
                     Log.d(LOG_ID, "result from broadcast is null. This should not happen");
-                }
-
-                if (boundToIMemeService) {
-                    updateMeme(iMemeService.getRandomMeme());
+                } else {
+                    memes = MemeJsonParser.parseMemeJson(result);
+                    adaptor.setMemes(memes);
+                    adaptor.notifyDataSetChanged();
                 }
             }
         };

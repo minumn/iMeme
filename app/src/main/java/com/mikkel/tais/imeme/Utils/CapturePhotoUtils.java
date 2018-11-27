@@ -1,4 +1,4 @@
-package com.mikkel.tais.imeme;
+package com.mikkel.tais.imeme.Utils;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

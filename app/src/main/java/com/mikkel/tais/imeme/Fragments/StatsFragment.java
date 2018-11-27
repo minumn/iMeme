@@ -15,7 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.mikkel.tais.imeme.Models.StatsModel;
+import com.mikkel.tais.imeme.Models.Stats;
 import com.mikkel.tais.imeme.R;
 import com.mikkel.tais.imeme.Services.IMemeService;
 
@@ -65,7 +65,7 @@ public class StatsFragment extends Fragment {
                 iMemeService = ((IMemeService.IMemeUpdateServiceBinder) service).getService();
                 Log.d(LOG_ID, "iMeme service connected.");
 
-                StatsModel stats = iMemeService.getStatsFromSP();
+                Stats stats = iMemeService.getStatsFromSP();
                 txtFirstUsage.setText(iMemeService.getFirstUsageFromSP());
                 txtTotalBLBSeen.setText(Integer.toString(stats.getTotalBLBSeen()));
                 txtTotalBLBSaved.setText(Integer.toString(stats.getTotalBLBSaved()));

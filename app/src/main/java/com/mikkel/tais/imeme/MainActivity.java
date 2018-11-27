@@ -23,6 +23,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.mikkel.tais.imeme.Fragments.MemeGeneratorFragment;
 import com.mikkel.tais.imeme.Fragments.RandomMemeFragment;
 import com.mikkel.tais.imeme.Fragments.StatsFragment;
 import com.mikkel.tais.imeme.Services.IMemeService;
@@ -41,6 +42,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     // Fragment stuff
     private RandomMemeFragment randomMemeFragment = new RandomMemeFragment();
     private StatsFragment statsFragment = new StatsFragment();
+    private MemeGeneratorFragment memeGeneratorFragment = new MemeGeneratorFragment();
 
     // # # # SERVICE FUNCTIONALITY # # #
     private void startIMemeService() {
@@ -178,6 +180,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         switch (item.getItemId()) {
             case R.id.nav_randomBillMeme:
                 setFragmentView(randomMemeFragment);
+                break;
+            case R.id.nav_memeGen:
+                setFragmentView(memeGeneratorFragment);
                 break;
             case R.id.nav_gallery:
                 Intent intent = new Intent(Intent.ACTION_VIEW, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
