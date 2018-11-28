@@ -46,6 +46,7 @@ public class RandomMemeFragment extends Fragment {
     public IMemeService iMemeService;
     private boolean boundToIMemeService = false;
 
+    // # # # onFunctions # # #
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {

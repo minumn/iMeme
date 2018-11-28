@@ -25,6 +25,7 @@ public class StatsFragment extends Fragment {
     private ServiceConnection serviceConnection;
 
     private static final String LOG_ID = "StatsFragment_log";
+    // TODO: Avg memes / day? Det er vel grunden til at vi gemmer første dag. Den er mærkelig i sig selv.
     private TextView txtFirstUsage;
     private TextView txtTotalBLBSeen;
     private TextView txtTotalBLBSaved;
