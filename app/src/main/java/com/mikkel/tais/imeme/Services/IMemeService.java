@@ -15,6 +15,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Binder;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
@@ -38,6 +39,7 @@ import com.mikkel.tais.imeme.Models.Stats;
 import com.mikkel.tais.imeme.R;
 
 import java.util.Calendar;
+import java.util.Date;
 
 import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_BOOL_FIRST_TIME;
 import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_INT_BLB_SAVED;
@@ -88,6 +90,15 @@ public class IMemeService extends Service {
     private static final int NOTIFICATION_ID = 101;
     Integer silentTimeStart, silentTimeEnd;
     boolean notificationLevel;
+    private static final long NOTIFICATION_DELAY = 1000*60*60; // 60 minutes
+    Handler notificationHandler = new Handler();
+    Runnable notificationRunnable = new Runnable() {
+        @Override
+        public void run() {
+            notifyUserAboutNewMeme();
+            notificationHandler.postDelayed(notificationRunnable, NOTIFICATION_DELAY);
+        }
+    };
 
     // # # # Setup functions # # #
 
@@ -124,7 +135,7 @@ public class IMemeService extends Service {
 
         // Very important on Android 8.0 and higher to create notificationChannel!
         createNotificationChannel();
-        notifyUserAboutNewMeme();
+        notificationHandler.postDelayed(notificationRunnable, 5);
     }
 
     @Override
@@ -317,21 +328,54 @@ public class IMemeService extends Service {
     // REF: https://developer.android.com/training/notify-user/build-notification
     private void notifyUserAboutNewMeme() {
         // TODO: I think this will start MainActivity when pressing notification. Should be changed to randomBillMeme later.
-        Intent intent = new Intent(this, MainActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
+        if (notificationLevel && silentTimeNotNow()) {
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
 
-        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_menu_share)
-                .setContentTitle("iMeme")
-                .setContentText("Check out this new meme!")
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                // Following two lines makes you able to tap on the notification to shoot pendingIntent
-                .setContentIntent(pendingIntent)
-                .setAutoCancel(true);
+            NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                    .setSmallIcon(R.drawable.ic_menu_share)
+                    .setContentTitle("iMeme")
+                    .setContentText("Check out this new meme!")
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                    // Following two lines makes you able to tap on the notification to shoot pendingIntent
+                    .setContentIntent(pendingIntent)
+                    .setAutoCancel(true);
 
-        // notificationId is a unique int for each notification that you must define
-        notificationManager.notify(NOTIFICATION_ID, mBuilder.build());
+            // notificationId is a unique int for each notification that you must define
+            notificationManager.notify(NOTIFICATION_ID, mBuilder.build());
+        }
+    }
+
+    private boolean silentTimeNotNow() {
+        Calendar cal = Calendar.getInstance();
+        Integer currentHour = cal.get(cal.HOUR_OF_DAY), currentMinute = cal.get(cal.MINUTE);
+
+        Integer silentTimeStartHour = silentTimeStart / 60, silentTimeStartMinute = silentTimeStart % 60;
+        Integer silentTimeEndHour = silentTimeEnd / 60, silentTimeEndMinute = silentTimeEnd % 60;
+
+        // All is good. We are outside the silentTime.
+        if (currentHour < silentTimeStartHour || currentHour > silentTimeEndHour) {
+            return true;
+        } else {
+            // We are close to startTime / endTime
+            if (currentHour.equals(silentTimeStartHour)) {
+                if (currentMinute < silentTimeStartMinute) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } else if (currentHour.equals(silentTimeEndHour)) {
+                if (currentMinute > silentTimeEndMinute) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                Log.d(LOG_ID, "Error in interpretting sileTimeNotNow()");
+                return false;
+            }
+        }
     }
 
     private void createNotificationChannel() {
@@ -362,6 +406,7 @@ public class IMemeService extends Service {
         silentTimeStart = silentTimeStart_;
         silentTimeEnd = silentTimeEnd_;
         // TODO: Save to preferences
+        // TODO: Set alarms
     }
 
     public boolean getNotificationLevel(){
