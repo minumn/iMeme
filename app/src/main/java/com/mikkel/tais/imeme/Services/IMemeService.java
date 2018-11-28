@@ -151,8 +151,8 @@ public class IMemeService extends Service {
     private void loadNotificationVariables() {
         // TODO: Get from saved preferences
 
-        silentTimeStart = 0;
-        silentTimeEnd = 0;
+        silentTimeStart = 22*60;
+        silentTimeEnd = 8*60;
         notificationLevel = true;
     }
 

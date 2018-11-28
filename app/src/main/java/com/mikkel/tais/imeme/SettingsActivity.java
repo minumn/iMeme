@@ -104,10 +104,10 @@ public class SettingsActivity extends AppCompatActivity {
 
     // # # # Utility functions # # #
     private void updateSilentTimeTxt() {
-        if (silentTimeStart < silentTimeEnd) {
-            silentTimeTxt.setText(String.format("%02d:%02d-%02d:%02d", silentTimeStart / 60, silentTimeStart % 60, silentTimeEnd / 60, silentTimeEnd % 60));
-        } else {
+        if (silentTimeStart.equals(silentTimeEnd)) {
             silentTimeTxt.setText("None");
+        } else {
+            silentTimeTxt.setText(String.format("%02d:%02d-%02d:%02d", silentTimeStart / 60, silentTimeStart % 60, silentTimeEnd / 60, silentTimeEnd % 60));
         }
     }
 
