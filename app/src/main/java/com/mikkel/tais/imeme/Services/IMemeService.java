@@ -86,6 +86,8 @@ public class IMemeService extends Service {
     // Notification stuff
     NotificationManagerCompat notificationManager;
     private static final int NOTIFICATION_ID = 101;
+    Integer silentTimeStart, silentTimeEnd;
+    boolean notificationLevel;
 
     // # # # Setup functions # # #
 
@@ -117,9 +119,30 @@ public class IMemeService extends Service {
         setupSharedPrefs();
         loadStatsVariables();
 
+        // Load notificationVariables
+        loadNotificationVariables();
+
         // Very important on Android 8.0 and higher to create notificationChannel!
         createNotificationChannel();
         notifyUserAboutNewMeme();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+    }
+
+    // # # # Functionality functions # # #
+    public Bitmap getRandomMeme() {
+        return randomBillMeme;
+    }
+
+    private void loadNotificationVariables() {
+        // TODO: Get from saved preferences
+
+        silentTimeStart = 0;
+        silentTimeEnd = 0;
+        notificationLevel = true;
     }
 
     private void loadStatsVariables() {
@@ -134,15 +157,6 @@ public class IMemeService extends Service {
         totalBLBShared = stats.getTotalBLBShared();
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-    }
-
-    // # # # Functionality functions # # #
-    public Bitmap getRandomMeme() {
-        return randomBillMeme;
-    }
 
     // REF: Inspiration found on https://android--examples.blogspot.com/2017/02/android-volley-image-request-example.html
     public void requestRandomMeme() {
@@ -339,6 +353,29 @@ public class IMemeService extends Service {
         }
     }
 
+    public void setNotificationLevel(boolean level){
+        notificationLevel = level;
+        // TODO: Save to preferences
+    }
+
+    public void setSilentTime(Integer silentTimeStart_, Integer silentTimeEnd_){
+        silentTimeStart = silentTimeStart_;
+        silentTimeEnd = silentTimeEnd_;
+        // TODO: Save to preferences
+    }
+
+    public boolean getNotificationLevel(){
+        return notificationLevel;
+    }
+
+    public Integer getSilentTimeStart(){
+        return silentTimeStart;
+    }
+
+    public Integer getSilentTimeEnd(){
+        return silentTimeEnd;
+    }
+
     // # # # BROADCAST # # #
     private void broadcastNewBillMemeAvailable(String result) {
         Log.d(LOG_ID, "Broadcasting new bill meme available!");
@@ -406,5 +443,9 @@ public class IMemeService extends Service {
         }
 
         editor.apply();
+    }
+
+    public void resetStats(){
+        // TODO: impl.
     }
 }

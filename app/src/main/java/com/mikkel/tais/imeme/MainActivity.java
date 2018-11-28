@@ -84,6 +84,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     @Override
                     public void onClick(View v) {
                         Toast.makeText(MainActivity.this, "Button clicked!", Toast.LENGTH_SHORT).show();
+                        startActivityForResult(new Intent(MainActivity.this, SettingsActivity.class), SETTINGS_REQ);
                     }
                 }
         );

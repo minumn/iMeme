@@ -31,10 +31,11 @@
             android:exported="true"
             android:permission="true" />
 
+        <activity android:name=".MemeResultActivity" />
         <activity
             android:name=".SettingsActivity"
-            android:label="@string/title_activity_settings" />
-        <activity android:name=".MemeResultActivity"></activity>
+            android:label="@string/title_activity_settings"
+            android:theme="@style/AppTheme.NoActionBar" />
     </application>
 
 </manifest>
