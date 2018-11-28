@@ -167,7 +167,7 @@ public class SettingsActivity extends AppCompatActivity {
                     notificationLevel = isChecked;
                     updateSilentTimeTxt();
                     iMemeService.setNotificationLevel(isChecked);
-                    Toast.makeText(SettingsActivity.this, "Switch ", Toast.LENGTH_SHORT).show();
+                    // Toast.makeText(SettingsActivity.this, "Switch ", Toast.LENGTH_SHORT).show();
                 }
             }
         });
