@@ -1,8 +1,10 @@
 package com.mikkel.tais.imeme.Fragments;
 
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
@@ -12,12 +14,15 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
+import android.text.InputFilter;
+import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -45,8 +50,6 @@ public class MemeGeneratorFragment extends Fragment {
     private BroadcastReceiver broadcastDataUpdatedReceiver;
 
     private static final String LOG_ID = "MemeGenFrag_log";
-    private EditText edtTopText;
-    private EditText edtBottomText;
     private ListView lstMemes;
     private List<Meme> memes;
     private MemeAdaptor adaptor;
@@ -74,26 +77,66 @@ public class MemeGeneratorFragment extends Fragment {
         unRegisterBroadcast(broadcastDataUpdatedReceiver);
     }
 
-    private void goToResult(Meme meme) {
-        String topText = edtTopText.getText().toString().trim();
-        String bottomText = edtBottomText.getText().toString().trim();
+    private void openTextDialog(final Meme meme) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
 
-        if (topText.equals("") || bottomText.equals("")) {
-            //TODO: Externalizeeeee!
-            Toast.makeText(getActivity(), "Fill out the text fields", Toast.LENGTH_SHORT).show();
-        } else {
-            Intent intent = new Intent(getContext(), MemeResultActivity.class);
-            intent.putExtra(EXTRA_MEME_ID, meme.getId());
-            intent.putExtra(EXTRA_MEME_T1, topText);
-            intent.putExtra(EXTRA_MEME_T2, bottomText);
+        builder.setMessage(meme.getName());
 
-            startActivity(intent);
-        }
+        LinearLayout layout = new LinearLayout(getContext());
+        layout.setOrientation(LinearLayout.VERTICAL);
+
+        //TODO: Externalizeeeee!
+        final EditText edtText1 = setupDialogEditText("Insert text 1 bla");
+        layout.addView(edtText1);
+
+        final EditText edtText2 = setupDialogEditText("Insert text 2 bla");
+        layout.addView(edtText2);
+
+        builder.setView(layout);
+
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int id) {
+                String text1 = edtText1.getText().toString().trim();
+                String text2 = edtText2.getText().toString().trim();
+
+                if (text1.equals("") || text2.equals("")) {
+                    //TODO: Externalizeeeee!
+                    Toast.makeText(getActivity(), "Fill out the text fields", Toast.LENGTH_SHORT).show();
+                } else {
+                    goToResult(meme, text1, text2);
+                }
+            }
+        });
+
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+            }
+        });
+
+        builder.create().show();
+    }
+
+    private EditText setupDialogEditText(String hint) {
+        final EditText text = new EditText(getContext());
+        text.setHint(hint);
+        text.setInputType(InputType.TYPE_TEXT_VARIATION_PERSON_NAME);
+        text.setFilters(new InputFilter[]{new InputFilter.LengthFilter(50)});
+
+        return text;
+    }
+
+    private void goToResult(Meme meme, String text1, String text2) {
+        Intent intent = new Intent(getContext(), MemeResultActivity.class);
+        intent.putExtra(EXTRA_MEME_ID, meme.getId());
+        intent.putExtra(EXTRA_MEME_T1, text1);
+        intent.putExtra(EXTRA_MEME_T2, text2);
+
+        startActivity(intent);
     }
 
     private void initiateVariables() {
-        edtTopText = getActivity().findViewById(R.id.edtTopText);
-        edtBottomText = getActivity().findViewById(R.id.edtBottomText);
         lstMemes = getActivity().findViewById(R.id.lstMemes);
     }
 
@@ -113,7 +156,7 @@ public class MemeGeneratorFragment extends Fragment {
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                         Meme meme = memes.get(position);
                         if (meme != null) {
-                            goToResult(meme);
+                            openTextDialog(meme);
                         }
                     }
                 });

@@ -13,7 +13,6 @@ import com.mikkel.tais.imeme.R;
 import java.util.List;
 
 public class MemeAdaptor extends BaseAdapter {
-
     private List<Meme> memes;
     private Context context;
 
@@ -43,10 +42,6 @@ public class MemeAdaptor extends BaseAdapter {
     @Override
     public long getItemId(int position) {
         return 0;
-    }
-
-    public List<Meme> getMemes() {
-        return memes;
     }
 
     public void setMemes(List<Meme> memes) {

@@ -3,12 +3,10 @@ package com.mikkel.tais.imeme.Models;
 public class Meme {
     private String id;
     private String name;
-    private String url;
 
-    public Meme(String id, String name, String url) {
+    public Meme(String id, String name) {
         this.id = id;
         this.name = name;
-        this.url = url;
     }
 
     public String getId() {
@@ -25,13 +23,5 @@ public class Meme {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
     }
 }

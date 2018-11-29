@@ -19,8 +19,6 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
 import android.widget.Toast;
 
 import com.mikkel.tais.imeme.Fragments.BlankFragment;
@@ -33,13 +31,13 @@ import com.mikkel.tais.imeme.Services.IMemeService;
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private static final String LOG_ID = "MainActivity_log";
 
-
     // Stuff for IMeme Service
     public IMemeService iMemeService;
     private ServiceConnection serviceConnection;
     private boolean boundToIMemeService = false;
 
     // Fragment stuff
+    private Fragment currentFragment;
     private RandomMemeFragment randomMemeFragment = new RandomMemeFragment();
     private StatsFragment statsFragment = new StatsFragment();
     private MemeGeneratorFragment memeGeneratorFragment = new MemeGeneratorFragment();
@@ -81,13 +79,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     // # # # UTILITY FUNCTIONS # # #
 
     private void setFragmentView(Fragment fragment) {
-        if (findViewById(R.id.fragment_container) != null) {
+        if (findViewById(R.id.fragment_container) != null && currentFragment != fragment) {
 
             FragmentTransaction fragmentTransaction = getSupportFragmentManager()
                     .beginTransaction()
                     .replace(R.id.fragment_container, fragment);
 
-            // TODO: Any way to check what fragment is currently shown to prevent the user from opening the same multiple times?
             fragmentTransaction.addToBackStack(null).commit();
         }
     }
@@ -126,8 +123,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         initiateDrawerMenu();
 
-        setMainFragment();
+        if (savedInstanceState == null) {
+            setMainFragment();
+        }
 
+        String menuFragment = getIntent().getAction();
+
+        if (menuFragment != null && !menuFragment.equals("android.intent.action.MAIN")) {
+            if (menuFragment.equals("bill")) {
+                setFragmentView(randomMemeFragment);
+            } else {
+                Toast.makeText(this, menuFragment, Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     @Override
@@ -143,6 +151,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
+            currentFragment = null;
             super.onBackPressed();
         }
     }
@@ -179,9 +188,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         switch (item.getItemId()) {
             case R.id.nav_randomBillMeme:
                 setFragmentView(randomMemeFragment);
+                currentFragment = randomMemeFragment;
                 break;
             case R.id.nav_memeGen:
                 setFragmentView(memeGeneratorFragment);
+                currentFragment = memeGeneratorFragment;
                 break;
             case R.id.nav_gallery:
                 Intent intent = new Intent(Intent.ACTION_VIEW, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
@@ -189,6 +200,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 break;
             case R.id.nav_stats:
                 setFragmentView(statsFragment);
+                currentFragment = statsFragment;
                 break;
         }
 

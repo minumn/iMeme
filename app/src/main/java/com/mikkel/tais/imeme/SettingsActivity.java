@@ -26,7 +26,7 @@ public class SettingsActivity extends AppCompatActivity {
     TextView silentTimeTxt;
     Integer silentTimeStart = 0, silentTimeEnd = 0;
     boolean notificationLevel = true;
-    Button backBtn, saveBtn, resetStatsBtn;
+    Button saveBtn, resetStatsBtn;
     Switch notificationSwitch;
 
     // Stuff for IMeme Service
@@ -43,14 +43,14 @@ public class SettingsActivity extends AppCompatActivity {
         bindToIMemeService();
 
         setContentView(R.layout.activity_settings);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         timeSliderStart = findViewById(R.id.seekBarSilentStart);
         timeSliderStart.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if(fromUser) {
+                if (fromUser) {
                     silentTimeStart = progress;
                     updateSilentTimeTxt();
                 }
@@ -79,12 +79,10 @@ public class SettingsActivity extends AppCompatActivity {
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-
             }
         });
 
@@ -92,7 +90,7 @@ public class SettingsActivity extends AppCompatActivity {
         silentTimeTxt.setText("None");
 
         initSwitch();
-        
+
         initButtonFunctionality();
     }
 
@@ -112,18 +110,8 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void initButtonFunctionality() {
-        backBtn = findViewById(R.id.backBtn);
         saveBtn = findViewById(R.id.saveNotificationsBtn);
         resetStatsBtn = findViewById(R.id.resetStatsBtn);
-
-        backBtn.setOnClickListener(
-                new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        finish();
-                    }
-                }
-        );
 
         saveBtn.setOnClickListener(
                 new View.OnClickListener() {
@@ -146,7 +134,7 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void resetStatsClicked() {
-        if(boundToIMemeService){
+        if (boundToIMemeService) {
             // TODO: Ask if user is sure
             iMemeService.resetStats();
             Toast.makeText(this, "Stats reset", Toast.LENGTH_SHORT).show();
@@ -158,12 +146,12 @@ public class SettingsActivity extends AppCompatActivity {
         iMemeService.setSilentTime(silentTimeStart, silentTimeEnd);
     }
 
-    private void initSwitch(){
+    private void initSwitch() {
         notificationSwitch = findViewById(R.id.notifications_switch);
         notificationSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (boundToIMemeService){
+                if (boundToIMemeService) {
                     notificationLevel = isChecked;
                     updateSilentTimeTxt();
                     iMemeService.setNotificationLevel(isChecked);
@@ -212,5 +200,4 @@ public class SettingsActivity extends AppCompatActivity {
             boundToIMemeService = false;
         }
     }
-
 }

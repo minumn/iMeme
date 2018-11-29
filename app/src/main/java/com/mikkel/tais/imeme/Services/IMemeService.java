@@ -33,13 +33,12 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.mikkel.tais.imeme.Utils.CapturePhotoUtils;
 import com.mikkel.tais.imeme.MainActivity;
 import com.mikkel.tais.imeme.Models.Stats;
 import com.mikkel.tais.imeme.R;
+import com.mikkel.tais.imeme.Utils.CapturePhotoUtils;
 
 import java.util.Calendar;
-import java.util.Date;
 
 import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_BOOL_FIRST_TIME;
 import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_INT_BLB_SAVED;
@@ -73,14 +72,10 @@ public class IMemeService extends Service {
     private Bitmap generatedMeme;
 
     // Stats variable
+    public SharedPreferences prefs;
     private int totalBLBSeen;
     private int totalBLBSaved;
     private int totalBLBShared;
-    /* Time spend watching memes? Much harder to impl.
-        Maybe some time variable which is updated based on some activity lifetime?
-        e.g onCreate -> timeStarted. onDestroy updates with timeStarted minus timeNow and save to preferences
-    */
-    public SharedPreferences prefs;
 
     // Volley stuff
     private RequestQueue volleyQueue;
@@ -90,7 +85,7 @@ public class IMemeService extends Service {
     private static final int NOTIFICATION_ID = 101;
     Integer silentTimeStart, silentTimeEnd;
     boolean notificationLevel;
-    private static final long NOTIFICATION_DELAY = 1000*60*60; // 60 minutes
+    private static final long NOTIFICATION_DELAY = 1000 * 60 * 60; // 60 minutes
     Handler notificationHandler = new Handler();
     Runnable notificationRunnable = new Runnable() {
         @Override
@@ -151,8 +146,8 @@ public class IMemeService extends Service {
     private void loadNotificationVariables() {
         // TODO: Get from saved preferences
 
-        silentTimeStart = 22*60;
-        silentTimeEnd = 8*60;
+        silentTimeStart = 22 * 60;
+        silentTimeEnd = 8 * 60;
         notificationLevel = true;
     }
 
@@ -327,17 +322,17 @@ public class IMemeService extends Service {
     // # # # Notifications # # #
     // REF: https://developer.android.com/training/notify-user/build-notification
     private void notifyUserAboutNewMeme() {
-        // TODO: I think this will start MainActivity when pressing notification. Should be changed to randomBillMeme later.
         if (notificationLevel && silentTimeNotNow()) {
             Intent intent = new Intent(this, MainActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            intent.setAction("bill");
             PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
 
             NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
                     .setSmallIcon(R.drawable.ic_menu_share)
                     .setContentTitle("iMeme")
                     .setContentText("Check out this new meme!")
-                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                    .setPriority(NotificationCompat.PRIORITY_MAX)
                     // Following two lines makes you able to tap on the notification to shoot pendingIntent
                     .setContentIntent(pendingIntent)
                     .setAutoCancel(true);
@@ -397,27 +392,27 @@ public class IMemeService extends Service {
         }
     }
 
-    public void setNotificationLevel(boolean level){
+    public void setNotificationLevel(boolean level) {
         notificationLevel = level;
         // TODO: Save to preferences
     }
 
-    public void setSilentTime(Integer silentTimeStart_, Integer silentTimeEnd_){
+    public void setSilentTime(Integer silentTimeStart_, Integer silentTimeEnd_) {
         silentTimeStart = silentTimeStart_;
         silentTimeEnd = silentTimeEnd_;
         // TODO: Save to preferences
         // TODO: Set alarms
     }
 
-    public boolean getNotificationLevel(){
+    public boolean getNotificationLevel() {
         return notificationLevel;
     }
 
-    public Integer getSilentTimeStart(){
+    public Integer getSilentTimeStart() {
         return silentTimeStart;
     }
 
-    public Integer getSilentTimeEnd(){
+    public Integer getSilentTimeEnd() {
         return silentTimeEnd;
     }
 
@@ -490,7 +485,7 @@ public class IMemeService extends Service {
         editor.apply();
     }
 
-    public void resetStats(){
+    public void resetStats() {
         // TODO: impl.
     }
 }

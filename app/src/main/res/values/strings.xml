@@ -2,8 +2,8 @@
     <string name="app_name">iMeme</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
-    <string name="nav_header_title">Android Studio</string>
-    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_title">iMeme</string>
+    <string name="nav_header_subtitle">No. 1 meme app in the World!</string>
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
     <string name="welcomeMessage">Welcome back Meme lover!</string>
@@ -93,5 +93,6 @@
     <string name="lbl_first_usage">First usage:</string>
     <string name="edt_top_text">Insert text 1 here</string>
     <string name="edt_bottom_text">Insert text 2 here</string>
-    <string name="title_activity_settings">SettingsActivity</string>
+    <string name="title_activity_settings">Settings</string>
+    <string name="lbl_meme_gen_header">Pick your favorite meme!</string>
 </resources>

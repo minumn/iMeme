@@ -21,10 +21,8 @@ public class MemeJsonParser {
 
                 String id = obj.getString("id");
                 String name = obj.getString("name");
-                String url = obj.getString("url").replace("\\", "");
 
-                // Removing backslash from url by escaping it, as url comes with backslash before each slash
-                memes.add(new Meme(id, name, url));
+                memes.add(new Meme(id, name));
             }
         } catch (JSONException e) {
             e.printStackTrace();
