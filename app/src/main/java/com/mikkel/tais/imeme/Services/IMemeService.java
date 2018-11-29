@@ -15,6 +15,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Binder;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
@@ -38,6 +39,7 @@ import com.mikkel.tais.imeme.Models.Stats;
 import com.mikkel.tais.imeme.R;
 
 import java.util.Calendar;
+import java.util.Date;
 
 import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_BOOL_FIRST_TIME;
 import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_INT_BLB_SAVED;
@@ -86,6 +88,17 @@ public class IMemeService extends Service {
     // Notification stuff
     NotificationManagerCompat notificationManager;
     private static final int NOTIFICATION_ID = 101;
+    Integer silentTimeStart, silentTimeEnd;
+    boolean notificationLevel;
+    private static final long NOTIFICATION_DELAY = 1000*60*60; // 60 minutes
+    Handler notificationHandler = new Handler();
+    Runnable notificationRunnable = new Runnable() {
+        @Override
+        public void run() {
+            notifyUserAboutNewMeme();
+            notificationHandler.postDelayed(notificationRunnable, NOTIFICATION_DELAY);
+        }
+    };
 
     // # # # Setup functions # # #
 
@@ -117,9 +130,30 @@ public class IMemeService extends Service {
         setupSharedPrefs();
         loadStatsVariables();
 
+        // Load notificationVariables
+        loadNotificationVariables();
+
         // Very important on Android 8.0 and higher to create notificationChannel!
         createNotificationChannel();
-        notifyUserAboutNewMeme();
+        notificationHandler.postDelayed(notificationRunnable, 5);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+    }
+
+    // # # # Functionality functions # # #
+    public Bitmap getRandomMeme() {
+        return randomBillMeme;
+    }
+
+    private void loadNotificationVariables() {
+        // TODO: Get from saved preferences
+
+        silentTimeStart = 22*60;
+        silentTimeEnd = 8*60;
+        notificationLevel = true;
     }
 
     private void loadStatsVariables() {
@@ -134,15 +168,6 @@ public class IMemeService extends Service {
         totalBLBShared = stats.getTotalBLBShared();
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-    }
-
-    // # # # Functionality functions # # #
-    public Bitmap getRandomMeme() {
-        return randomBillMeme;
-    }
 
     // REF: Inspiration found on https://android--examples.blogspot.com/2017/02/android-volley-image-request-example.html
     public void requestRandomMeme() {
@@ -303,21 +328,54 @@ public class IMemeService extends Service {
     // REF: https://developer.android.com/training/notify-user/build-notification
     private void notifyUserAboutNewMeme() {
         // TODO: I think this will start MainActivity when pressing notification. Should be changed to randomBillMeme later.
-        Intent intent = new Intent(this, MainActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
+        if (notificationLevel && silentTimeNotNow()) {
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
 
-        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_menu_share)
-                .setContentTitle("iMeme")
-                .setContentText("Check out this new meme!")
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                // Following two lines makes you able to tap on the notification to shoot pendingIntent
-                .setContentIntent(pendingIntent)
-                .setAutoCancel(true);
+            NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                    .setSmallIcon(R.drawable.ic_menu_share)
+                    .setContentTitle("iMeme")
+                    .setContentText("Check out this new meme!")
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                    // Following two lines makes you able to tap on the notification to shoot pendingIntent
+                    .setContentIntent(pendingIntent)
+                    .setAutoCancel(true);
 
-        // notificationId is a unique int for each notification that you must define
-        notificationManager.notify(NOTIFICATION_ID, mBuilder.build());
+            // notificationId is a unique int for each notification that you must define
+            notificationManager.notify(NOTIFICATION_ID, mBuilder.build());
+        }
+    }
+
+    private boolean silentTimeNotNow() {
+        Calendar cal = Calendar.getInstance();
+        Integer currentHour = cal.get(cal.HOUR_OF_DAY), currentMinute = cal.get(cal.MINUTE);
+
+        Integer silentTimeStartHour = silentTimeStart / 60, silentTimeStartMinute = silentTimeStart % 60;
+        Integer silentTimeEndHour = silentTimeEnd / 60, silentTimeEndMinute = silentTimeEnd % 60;
+
+        // All is good. We are outside the silentTime.
+        if (currentHour < silentTimeStartHour || currentHour > silentTimeEndHour) {
+            return true;
+        } else {
+            // We are close to startTime / endTime
+            if (currentHour.equals(silentTimeStartHour)) {
+                if (currentMinute < silentTimeStartMinute) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } else if (currentHour.equals(silentTimeEndHour)) {
+                if (currentMinute > silentTimeEndMinute) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                Log.d(LOG_ID, "Error in interpretting sileTimeNotNow()");
+                return false;
+            }
+        }
     }
 
     private void createNotificationChannel() {
@@ -337,6 +395,30 @@ public class IMemeService extends Service {
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
         }
+    }
+
+    public void setNotificationLevel(boolean level){
+        notificationLevel = level;
+        // TODO: Save to preferences
+    }
+
+    public void setSilentTime(Integer silentTimeStart_, Integer silentTimeEnd_){
+        silentTimeStart = silentTimeStart_;
+        silentTimeEnd = silentTimeEnd_;
+        // TODO: Save to preferences
+        // TODO: Set alarms
+    }
+
+    public boolean getNotificationLevel(){
+        return notificationLevel;
+    }
+
+    public Integer getSilentTimeStart(){
+        return silentTimeStart;
+    }
+
+    public Integer getSilentTimeEnd(){
+        return silentTimeEnd;
     }
 
     // # # # BROADCAST # # #
@@ -406,5 +488,9 @@ public class IMemeService extends Service {
         }
 
         editor.apply();
+    }
+
+    public void resetStats(){
+        // TODO: impl.
     }
 }

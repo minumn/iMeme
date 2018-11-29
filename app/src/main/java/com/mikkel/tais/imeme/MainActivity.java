@@ -23,6 +23,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.mikkel.tais.imeme.Fragments.BlankFragment;
 import com.mikkel.tais.imeme.Fragments.MemeGeneratorFragment;
 import com.mikkel.tais.imeme.Fragments.RandomMemeFragment;
 import com.mikkel.tais.imeme.Fragments.StatsFragment;
@@ -31,8 +32,7 @@ import com.mikkel.tais.imeme.Services.IMemeService;
 // REF: This class have been made using the default of Android Studio and previous assignments of ours.
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private static final String LOG_ID = "MainActivity_log";
-    private static final int SETTINGS_REQ = 102;
-    private Button testButton;
+
 
     // Stuff for IMeme Service
     public IMemeService iMemeService;
@@ -43,6 +43,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private RandomMemeFragment randomMemeFragment = new RandomMemeFragment();
     private StatsFragment statsFragment = new StatsFragment();
     private MemeGeneratorFragment memeGeneratorFragment = new MemeGeneratorFragment();
+    private BlankFragment mainFragment = new BlankFragment();
+    private static final int SETTINGS_REQ = 102;
 
     // # # # SERVICE FUNCTIONALITY # # #
     private void startIMemeService() {
@@ -77,17 +79,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     // # # # UTILITY FUNCTIONS # # #
-    private void initiateTestButton() {
-        testButton = findViewById(R.id.button2);
-        testButton.setOnClickListener(
-                new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Toast.makeText(MainActivity.this, "Button clicked!", Toast.LENGTH_SHORT).show();
-                    }
-                }
-        );
-    }
 
     private void setFragmentView(Fragment fragment) {
         if (findViewById(R.id.fragment_container) != null) {
@@ -115,6 +106,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         navigationView.setNavigationItemSelectedListener(this);
     }
 
+    private void setMainFragment() {
+        getSupportFragmentManager()
+                .beginTransaction()
+                .add(R.id.fragment_container, mainFragment)
+                .commit();
+    }
+
     // # # # onFunctions # # #
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -128,7 +126,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         initiateDrawerMenu();
 
-        initiateTestButton();
+        setMainFragment();
+
     }
 
     @Override
