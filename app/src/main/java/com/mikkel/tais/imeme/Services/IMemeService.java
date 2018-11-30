@@ -41,10 +41,18 @@ import com.mikkel.tais.imeme.Utils.CapturePhotoUtils;
 import java.util.Calendar;
 
 import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_BOOL_FIRST_TIME;
+import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_BOOL_NOTI;
+import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_INT_BLB_AVG_SEEN_DAY;
 import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_INT_BLB_SAVED;
 import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_INT_BLB_SEEN;
 import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_INT_BLB_SHARED;
-import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_STRING_FIRST_TIME;
+import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_INT_GEN_AVG_SEEN_DAY;
+import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_INT_GEN_SAVED;
+import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_INT_GEN_SEEN;
+import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_INT_GEN_SHARED;
+import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_INT_SILENT_END;
+import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_INT_SILENT_START;
+import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_LONG_FIRST_TIME;
 import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_NAME;
 
 /**
@@ -60,6 +68,8 @@ public class IMemeService extends Service {
     public static final String BROADCAST_LIST_OF_MEMES = "broadcast_list_of_memes";
     public static final String BROADCAST_GENERATED_MEME = "broadcast_generated_meme";
     public static final String BROADCAST_GENERATED_MEME_IMG = "broadcast_generated_meme_img";
+    public static final String BLB_SAVE_TITLE = "BeLikeBill_";
+    public static final String GENERATED_SAVE_TITLE = "iMemeGen_";
 
     public static final String BROADCAST_RESULT = "broadcast_result";
     public static final String BROADCAST_MEME_LIST_RESULT = "broadcast_meme_list_result";
@@ -75,7 +85,8 @@ public class IMemeService extends Service {
     public SharedPreferences prefs;
     private int totalBLBSeen;
     private int totalBLBSaved;
-    private int totalBLBShared;
+    private int totalGeneratedSeen;
+    private int totalGeneratedSaved;
 
     // Volley stuff
     private RequestQueue volleyQueue;
@@ -83,20 +94,21 @@ public class IMemeService extends Service {
     // Notification stuff
     NotificationManagerCompat notificationManager;
     private static final int NOTIFICATION_ID = 101;
-    Integer silentTimeStart, silentTimeEnd;
-    boolean notificationLevel;
+    private int silentTimeStart, silentTimeEnd;
+    private boolean notificationLevel;
     private static final long NOTIFICATION_DELAY = 1000 * 60 * 60; // 60 minutes
+
     Handler notificationHandler = new Handler();
     Runnable notificationRunnable = new Runnable() {
         @Override
         public void run() {
+            calcAvgPerDayStats();
             notifyUserAboutNewMeme();
             notificationHandler.postDelayed(notificationRunnable, NOTIFICATION_DELAY);
         }
     };
 
     // # # # Setup functions # # #
-
     public IMemeService() {
     }
 
@@ -124,6 +136,7 @@ public class IMemeService extends Service {
         notificationManager = NotificationManagerCompat.from(this);
         setupSharedPrefs();
         loadStatsVariables();
+        calcAvgPerDayStats();
 
         // Load notificationVariables
         loadNotificationVariables();
@@ -144,23 +157,43 @@ public class IMemeService extends Service {
     }
 
     private void loadNotificationVariables() {
-        // TODO: Get from saved preferences
+        int defValue = -1;
+        int prefsSilentTimeStart = prefs.getInt(SHARED_PREFS_KEY_INT_SILENT_START, defValue);
+        int prefsSilentTimeEnd = prefs.getInt(SHARED_PREFS_KEY_INT_SILENT_END, defValue);
 
-        silentTimeStart = 22 * 60;
-        silentTimeEnd = 8 * 60;
-        notificationLevel = true;
+        if (prefsSilentTimeStart == defValue) {
+            silentTimeStart = 22 * 60;
+            silentTimeEnd = 8 * 60;
+        } else {
+            silentTimeStart = prefsSilentTimeStart;
+            silentTimeEnd = prefsSilentTimeEnd;
+        }
+
+        notificationLevel = prefs.getBoolean(SHARED_PREFS_KEY_BOOL_NOTI, true);
     }
 
     private void loadStatsVariables() {
         if (prefs.getBoolean(SHARED_PREFS_KEY_BOOL_FIRST_TIME, true)) {
             setSharedPref(SHARED_PREFS_KEY_BOOL_FIRST_TIME, false);
-            setSharedPref(SHARED_PREFS_KEY_STRING_FIRST_TIME, Calendar.getInstance().getTime().toLocaleString());
+            setSharedPref(SHARED_PREFS_KEY_LONG_FIRST_TIME, Calendar.getInstance().getTimeInMillis());
         }
 
         Stats stats = getStatsFromSP();
         totalBLBSeen = stats.getTotalBLBSeen();
         totalBLBSaved = stats.getTotalBLBSaved();
-        totalBLBShared = stats.getTotalBLBShared();
+        totalGeneratedSeen = stats.getTotalGeneratedSeen();
+        totalGeneratedSaved = stats.getTotalGeneratedSaved();
+    }
+
+    private void calcAvgPerDayStats() {
+        long diff = prefs.getLong(SHARED_PREFS_KEY_LONG_FIRST_TIME, 0) - Calendar.getInstance().getTimeInMillis();
+        float diffDays = diff / 86400000; //1 day in millis
+
+        float avgBLB = totalBLBSeen / diffDays;
+        float avgGen = totalGeneratedSeen / diffDays;
+
+        setSharedPref(SHARED_PREFS_KEY_INT_BLB_AVG_SEEN_DAY, avgBLB);
+        setSharedPref(SHARED_PREFS_KEY_INT_GEN_AVG_SEEN_DAY, avgGen);
     }
 
 
@@ -173,7 +206,6 @@ public class IMemeService extends Service {
                 new Response.Listener<Bitmap>() {
                     @Override
                     public void onResponse(Bitmap response) {
-                        // TODO: Do something with response! Maybe save it locally and send a broadcast with link.
                         randomBillMeme = response;
                         broadcastNewBillMemeAvailable("OK");
                     }
@@ -261,14 +293,21 @@ public class IMemeService extends Service {
 
     public void saveImageToStorage(Bitmap source, String title) {
         //TODO: Externalizeeeee!
-        String url = "Image not saved";
+        String url = "Image not saved!";
 
         if (checkPermissionWRITE_EXTERNAL_STORAGE(this)) {
             CapturePhotoUtils.insertImage(getContentResolver(), source, title, "Image generated from iMeme");
-            url = "Image saved";
+            url = "Image saved successfully";
 
-            totalBLBSaved += 1;
-            setSharedPref(SHARED_PREFS_KEY_INT_BLB_SAVED, totalBLBSaved);
+            if (title.contains(BLB_SAVE_TITLE)) {
+                totalBLBSaved += 1;
+                setSharedPref(SHARED_PREFS_KEY_INT_BLB_SAVED, totalBLBSaved);
+            } else if (title.contains(GENERATED_SAVE_TITLE)) {
+                totalGeneratedSaved += 1;
+                setSharedPref(SHARED_PREFS_KEY_INT_GEN_SAVED, totalGeneratedSaved);
+            } else {
+                Log.d(LOG_ID, "Stats not updated for " + title);
+            }
         }
 
         Toast.makeText(this, url, Toast.LENGTH_SHORT).show();
@@ -344,30 +383,23 @@ public class IMemeService extends Service {
 
     private boolean silentTimeNotNow() {
         Calendar cal = Calendar.getInstance();
-        Integer currentHour = cal.get(cal.HOUR_OF_DAY), currentMinute = cal.get(cal.MINUTE);
+        int currentHour = cal.get(cal.HOUR_OF_DAY), currentMinute = cal.get(cal.MINUTE);
 
-        Integer silentTimeStartHour = silentTimeStart / 60, silentTimeStartMinute = silentTimeStart % 60;
-        Integer silentTimeEndHour = silentTimeEnd / 60, silentTimeEndMinute = silentTimeEnd % 60;
+        int silentTimeStartHour = silentTimeStart / 60, silentTimeStartMinute = silentTimeStart % 60;
+        int silentTimeEndHour = silentTimeEnd / 60, silentTimeEndMinute = silentTimeEnd % 60;
 
         // All is good. We are outside the silentTime.
         if (currentHour < silentTimeStartHour || currentHour > silentTimeEndHour) {
             return true;
         } else {
             // We are close to startTime / endTime
-            if (currentHour.equals(silentTimeStartHour)) {
-                if (currentMinute < silentTimeStartMinute) {
-                    return true;
-                } else {
-                    return false;
-                }
-            } else if (currentHour.equals(silentTimeEndHour)) {
-                if (currentMinute > silentTimeEndMinute) {
-                    return true;
-                } else {
-                    return false;
-                }
+            if (currentHour == silentTimeStartHour) {
+                return currentMinute < silentTimeStartMinute;
+            } else if (currentHour == silentTimeEndHour) {
+                return currentMinute > silentTimeEndMinute;
             } else {
-                Log.d(LOG_ID, "Error in interpretting sileTimeNotNow()");
+                Log.d(LOG_ID, "Error in interpretting silentTimeNotNow()");
+
                 return false;
             }
         }
@@ -377,9 +409,8 @@ public class IMemeService extends Service {
         // Create the NotificationChannel, but only on API 26+ because
         // the NotificationChannel class is new and not in the support library
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            // TODO: What is name and description?
-            CharSequence name = "name"; //getString(R.string.channel_name);
-            String description = "description"; //getString(R.string.channel_description);
+            CharSequence name = "iMeme channel"; //getString(R.string.channel_name);
+            String description = "A notification channel used by iMeme"; //getString(R.string.channel_description);
 
             int importance = NotificationManager.IMPORTANCE_DEFAULT;
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
@@ -394,25 +425,28 @@ public class IMemeService extends Service {
 
     public void setNotificationLevel(boolean level) {
         notificationLevel = level;
-        // TODO: Save to preferences
+        setSharedPref(SHARED_PREFS_KEY_BOOL_NOTI, notificationLevel);
     }
 
-    public void setSilentTime(Integer silentTimeStart_, Integer silentTimeEnd_) {
+    public void setSilentTime(int silentTimeStart_, int silentTimeEnd_) {
+        // TODO: Set alarms
         silentTimeStart = silentTimeStart_;
         silentTimeEnd = silentTimeEnd_;
-        // TODO: Save to preferences
-        // TODO: Set alarms
+
+        setSharedPref(SHARED_PREFS_KEY_INT_SILENT_START, silentTimeStart);
+        setSharedPref(SHARED_PREFS_KEY_INT_SILENT_END, silentTimeEnd);
+
     }
 
     public boolean getNotificationLevel() {
         return notificationLevel;
     }
 
-    public Integer getSilentTimeStart() {
+    public int getSilentTimeStart() {
         return silentTimeStart;
     }
 
-    public Integer getSilentTimeEnd() {
+    public int getSilentTimeEnd() {
         return silentTimeEnd;
     }
 
@@ -425,6 +459,7 @@ public class IMemeService extends Service {
 
         totalBLBSeen += 1;
         setSharedPref(SHARED_PREFS_KEY_INT_BLB_SEEN, totalBLBSeen);
+        calcAvgPerDayStats();
     }
 
     private void broadcastListOfAvailableMemes(String result) {
@@ -447,9 +482,9 @@ public class IMemeService extends Service {
         intent.putExtra(BROADCAST_GENERATED_MEME_IMG_RESULT, result);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
 
-        //TODO: update for generated meme
-        //totalBLBSeen += 1;
-        //setSharedPref(SHARED_PREFS_KEY_INT_BLB_SEEN, totalBLBSeen);
+        totalGeneratedSeen += 1;
+        setSharedPref(SHARED_PREFS_KEY_INT_GEN_SEEN, totalGeneratedSeen);
+        calcAvgPerDayStats();
     }
 
     // # # # Functions for StatsActivity # # #
@@ -462,24 +497,32 @@ public class IMemeService extends Service {
 
         stats.setTotalBLBSeen(prefs.getInt(SHARED_PREFS_KEY_INT_BLB_SEEN, 0));
         stats.setTotalBLBSaved(prefs.getInt(SHARED_PREFS_KEY_INT_BLB_SAVED, 0));
-        stats.setTotalBLBSaved(prefs.getInt(SHARED_PREFS_KEY_INT_BLB_SHARED, 0));
+        stats.setTotalBLBShared(prefs.getInt(SHARED_PREFS_KEY_INT_BLB_SHARED, 0));
+        stats.setTotalBLBAvgSeenDay(prefs.getFloat(SHARED_PREFS_KEY_INT_BLB_AVG_SEEN_DAY, 0));
+
+        stats.setTotalGeneratedSeen(prefs.getInt(SHARED_PREFS_KEY_INT_GEN_SEEN, 0));
+        stats.setTotalGeneratedSaved(prefs.getInt(SHARED_PREFS_KEY_INT_GEN_SAVED, 0));
+        stats.setTotalGeneratedShared(prefs.getInt(SHARED_PREFS_KEY_INT_GEN_SHARED, 0));
+        stats.setTotalGeneratedAvgSeenDay(prefs.getFloat(SHARED_PREFS_KEY_INT_GEN_AVG_SEEN_DAY, 0));
 
         return stats;
     }
 
-    public String getFirstUsageFromSP() {
-        return prefs.getString(SHARED_PREFS_KEY_STRING_FIRST_TIME, null);
+    public long getFirstUsageFromSP() {
+        return prefs.getLong(SHARED_PREFS_KEY_LONG_FIRST_TIME, 0);
     }
 
     public void setSharedPref(String key, Object value) {
         SharedPreferences.Editor editor = prefs.edit();
 
         if (value instanceof Integer) {
-            editor.putInt(key, (Integer) value);
+            editor.putInt(key, (int) value);
         } else if (value instanceof Boolean) {
-            editor.putBoolean(key, (Boolean) value);
-        } else if (value instanceof String) {
-            editor.putString(key, (String) value);
+            editor.putBoolean(key, (boolean) value);
+        } else if (value instanceof Long) {
+            editor.putLong(key, (long) value);
+        } else if (value instanceof Float) {
+            editor.putFloat(key, (float) value);
         }
 
         editor.apply();
@@ -487,5 +530,6 @@ public class IMemeService extends Service {
 
     public void resetStats() {
         // TODO: impl.
+        // TODO: NOT SAVED STATS
     }
 }

@@ -89,10 +89,15 @@
     <string name="lbl_total_BLB">Total number of Be Like Bill seen:</string>
     <string name="lbl_stats_header">Stats</string>
     <string name="lbl_total_blb_saved">Total number of Be Like Bill saved:</string>
-    <string name="lbl_total_blb_shared">Total number of Be Like Bill shared:</string>
+    <string name="lbl_avg_blb_seen">Average Be Like Bill seen / day:</string>
     <string name="lbl_first_usage">First usage:</string>
     <string name="edt_top_text">Insert text 1 here</string>
     <string name="edt_bottom_text">Insert text 2 here</string>
     <string name="title_activity_settings">Settings</string>
     <string name="lbl_meme_gen_header">Pick your favorite meme!</string>
+    <string name="lbl_blb_header">Be Like Bill</string>
+    <string name="lbl_result_header">Your new meme!</string>
+    <string name="lbl_total_gen_seen">Total number of generated memes:</string>
+    <string name="lbl_total_gen_saved">Total number of generated memes saved:</string>
+    <string name="lbl_avg_gen_day" >Average generated memes / day:</string>
 </resources>

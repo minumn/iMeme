@@ -25,6 +25,7 @@ import static com.mikkel.tais.imeme.Services.IMemeService.BROADCAST_GENERATED_ME
 import static com.mikkel.tais.imeme.Services.IMemeService.BROADCAST_GENERATED_MEME_IMG;
 import static com.mikkel.tais.imeme.Services.IMemeService.BROADCAST_GENERATED_MEME_IMG_RESULT;
 import static com.mikkel.tais.imeme.Services.IMemeService.BROADCAST_GENERATED_MEME_RESULT;
+import static com.mikkel.tais.imeme.Services.IMemeService.GENERATED_SAVE_TITLE;
 
 public class MemeResultActivity extends AppCompatActivity {
     private IMemeService iMemeService;
@@ -81,11 +82,10 @@ public class MemeResultActivity extends AppCompatActivity {
         btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //TODO: update with new shared prefs data
-                //int number = iMemeService.getStatsFromSP().getTotalBLBSaved();
-                //String title = "BeLikeBill_" + number;
+                int number = iMemeService.getStatsFromSP().getTotalGeneratedSaved();
+                String title = GENERATED_SAVE_TITLE + number;
 
-                iMemeService.saveImageToStorage(generatedMeme, "");
+                iMemeService.saveImageToStorage(generatedMeme, title);
             }
         });
     }

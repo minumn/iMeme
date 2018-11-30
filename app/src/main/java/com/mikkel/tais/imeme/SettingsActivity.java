@@ -1,11 +1,15 @@
 package com.mikkel.tais.imeme;
 
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -22,12 +26,11 @@ import com.mikkel.tais.imeme.Services.IMemeService;
 public class SettingsActivity extends AppCompatActivity {
     // TODO: Could look into https://developer.android.com/guide/topics/ui/controls/pickers
     private static final String LOG_ID = "SettingActivity_log";
-    SeekBar timeSliderEnd, timeSliderStart;
-    TextView silentTimeTxt;
-    Integer silentTimeStart = 0, silentTimeEnd = 0;
-    boolean notificationLevel = true;
-    Button saveBtn, resetStatsBtn;
-    Switch notificationSwitch;
+    private SeekBar timeSliderEnd, timeSliderStart;
+    private TextView silentTimeTxt;
+    private Integer silentTimeStart = 0, silentTimeEnd = 0;
+    private boolean notificationLevel = true;
+    private Switch notificationSwitch;
 
     // Stuff for IMeme Service
     public IMemeService iMemeService;
@@ -110,8 +113,8 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void initButtonFunctionality() {
-        saveBtn = findViewById(R.id.saveNotificationsBtn);
-        resetStatsBtn = findViewById(R.id.resetStatsBtn);
+        Button saveBtn = findViewById(R.id.saveNotificationsBtn);
+        Button resetStatsBtn = findViewById(R.id.resetStatsBtn);
 
         saveBtn.setOnClickListener(
                 new View.OnClickListener() {
@@ -135,10 +138,29 @@ public class SettingsActivity extends AppCompatActivity {
 
     private void resetStatsClicked() {
         if (boundToIMemeService) {
-            // TODO: Ask if user is sure
-            iMemeService.resetStats();
-            Toast.makeText(this, "Stats reset", Toast.LENGTH_SHORT).show();
+            showDialog();
         }
+    }
+
+    private void showDialog() {
+        AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
+        alertBuilder.setTitle("Reset stats");
+        alertBuilder.setMessage("Are you sure you want to reset stats");
+
+        alertBuilder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                iMemeService.resetStats();
+                Toast.makeText(getApplicationContext(), "Stats reset", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        alertBuilder.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+            }
+        });
+
+        alertBuilder.create().show();
     }
 
     private void saveClicked() {

@@ -16,12 +16,12 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginLeft="8dp"
-            android:layout_marginTop="50dp"
             android:text="@string/lbl_total_BLB"
             android:textSize="18sp"
             android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@+id/txtTotalBLBSeen"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/lblFirstUsage" />
+            app:layout_constraintTop_toBottomOf="@+id/txtFirstUsage" />
 
         <TextView
             android:id="@+id/lblStatsHeader"
@@ -45,12 +45,12 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginLeft="8dp"
-            android:layout_marginTop="50dp"
             android:text="@string/lbl_total_blb_saved"
             android:textSize="18sp"
             android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@+id/txtTotalBLBSaved"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/lblTotalBLBSeen" />
+            app:layout_constraintTop_toBottomOf="@+id/txtTotalBLBSeen" />
 
         <TextView
             android:id="@+id/txtTotalBLBSeen"
@@ -58,10 +58,10 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginLeft="8dp"
-            android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:layout_marginRight="8dp"
             android:text="10"
+            app:layout_constraintBottom_toTopOf="@+id/lblTotalBLBSaved"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/lblTotalBLBSeen" />
@@ -72,40 +72,40 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginLeft="8dp"
-            android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:layout_marginRight="8dp"
             android:text="20"
+            app:layout_constraintBottom_toTopOf="@+id/lblAvgBLBSeen"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/lblTotalBLBSaved" />
 
         <TextView
-            android:id="@+id/lblTotalBLBShared"
+            android:id="@+id/lblAvgBLBSeen"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginLeft="8dp"
-            android:layout_marginTop="50dp"
-            android:text="@string/lbl_total_blb_shared"
+            android:text="@string/lbl_avg_blb_seen"
             android:textSize="18sp"
             android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@+id/txtAvgBLBSeen"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/lblTotalBLBSaved" />
+            app:layout_constraintTop_toBottomOf="@+id/txtTotalBLBSaved" />
 
         <TextView
-            android:id="@+id/txtTotalBLBShared"
+            android:id="@+id/txtAvgBLBSeen"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginLeft="8dp"
-            android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:layout_marginRight="8dp"
             android:text="30"
+            app:layout_constraintBottom_toTopOf="@+id/lblTotalGenSeen"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/lblTotalBLBShared" />
+            app:layout_constraintTop_toBottomOf="@+id/lblAvgBLBSeen" />
 
         <TextView
             android:id="@+id/lblFirstUsage"
@@ -113,10 +113,10 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginLeft="8dp"
-            android:layout_marginTop="20dp"
             android:text="@string/lbl_first_usage"
             android:textSize="18sp"
             android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@+id/txtFirstUsage"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/lblStatsHeader" />
 
@@ -126,13 +126,94 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginLeft="8dp"
-            android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:layout_marginRight="8dp"
             android:text="12. dec"
+            app:layout_constraintBottom_toTopOf="@+id/lblTotalBLBSeen"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/lblFirstUsage" />
+
+        <TextView
+            android:id="@+id/lblTotalGenSeen"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginLeft="8dp"
+            android:text="@string/lbl_total_gen_seen"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@+id/txtTotalGenSeen"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/txtAvgBLBSeen" />
+
+        <TextView
+            android:id="@+id/lblTotalGenSaved"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginLeft="8dp"
+            android:text="@string/lbl_total_gen_saved"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@+id/txtTotalGenSaved"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/txtTotalGenSeen" />
+
+        <TextView
+            android:id="@+id/lblAvgGenDay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginLeft="8dp"
+            android:text="@string/lbl_avg_gen_day"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@+id/txtAvgGenDay"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/txtTotalGenSaved" />
+
+        <TextView
+            android:id="@+id/txtTotalGenSeen"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
+            android:text="40"
+            app:layout_constraintBottom_toTopOf="@+id/lblTotalGenSaved"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/lblTotalGenSeen" />
+
+        <TextView
+            android:id="@+id/txtTotalGenSaved"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
+            android:text="50"
+            app:layout_constraintBottom_toTopOf="@+id/lblAvgGenDay"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/lblTotalGenSaved" />
+
+        <TextView
+            android:id="@+id/txtAvgGenDay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
+            android:text="60"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/lblAvgGenDay" />
 
     </android.support.constraint.ConstraintLayout>
 

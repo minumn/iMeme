@@ -24,6 +24,7 @@ import android.widget.Toast;
 import com.mikkel.tais.imeme.R;
 import com.mikkel.tais.imeme.Services.IMemeService;
 
+import static com.mikkel.tais.imeme.Services.IMemeService.BLB_SAVE_TITLE;
 import static com.mikkel.tais.imeme.Services.IMemeService.BROADCAST_NEW_BILL_MEME_AVAILABLE;
 
 public class RandomMemeFragment extends Fragment {
@@ -90,7 +91,7 @@ public class RandomMemeFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 int number = iMemeService.getStatsFromSP().getTotalBLBSaved();
-                String title = "BeLikeBill_" + number;
+                String title = BLB_SAVE_TITLE + number;
 
                 iMemeService.saveImageToStorage(currentMeme, title);
             }
