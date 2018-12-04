@@ -395,6 +395,10 @@ public class IMemeService extends Service {
         }
     }
 
+    /**
+     * This function checks if current time is in the silent time interval.
+     * @return boolean value for above.
+     */
     private boolean silentTimeNotNow() {
         Calendar cal = Calendar.getInstance();
         int currentHour = cal.get(cal.HOUR_OF_DAY), currentMinute = cal.get(cal.MINUTE);
@@ -443,7 +447,7 @@ public class IMemeService extends Service {
     }
 
     public void setSilentTime(int silentTimeStart_, int silentTimeEnd_) {
-        // TODO: Set alarms
+        // TODO: Could prevent alarms from being called during silent time?
         silentTimeStart = silentTimeStart_;
         silentTimeEnd = silentTimeEnd_;
 
@@ -555,6 +559,6 @@ public class IMemeService extends Service {
         setSharedPref(SHARED_PREFS_KEY_LONG_FIRST_TIME, Calendar.getInstance().getTimeInMillis());
 
         Log.d(LOG_ID, "Stats have been reset!");
-        Toast.makeText(this, "Stats reset", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, getString(R.string.stats_reset), Toast.LENGTH_SHORT).show();
     }
 }
