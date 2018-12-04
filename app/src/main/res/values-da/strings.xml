@@ -40,4 +40,13 @@
     <string name="lbl_silent_time_saved">Stille tid gemt</string>
     <string name="stats_reset">Statistik nulstillet</string>
     <string name="txt_welcome">Velkommen til iMeme! Brug menuen til venstre for at vælge en kategori.</string>
+    <string name="lbl_stats_header" translatable="false">Statistik</string>
+    <string name="save">Gem</string>
+    <string name="reset_stats">Nustil statistik</string>
+    <string name="silent_time">Stille tid:</string>
+    <string name="notifications_enabled">Notifikationer aktiveret</string>
+    <string name="notifications_disabled">Notifikationer deaktiveret</string>
+    <string name="notifications">Notifikationer</string>
+    <string name="send_feature_toast">Send featuren er ikke implementeret endnu.</string>
+    <string name="share_feature_toast">Del featuren er ikke implementeret endnu.</string>
 </resources>

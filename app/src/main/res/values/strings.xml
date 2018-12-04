@@ -117,4 +117,18 @@
     <string name="lbl_silent_time_saved">Silent time saved</string>
     <string name="txt_welcome">Welcome to iMeme! Use the menu on the left to pick a category.</string>
     <string name="stats_reset">Stats reset</string>
+    <string name="save">Save</string>
+    <string name="reset_stats">Reset STATS</string>
+    <string name="timeplaceholder">timePlaceholder</string>
+    <string name="silent_time">Silent time:</string>
+    <string name="notifications_enabled">Notifications Enabled</string>
+    <string name="notifications_disabled">Notifications Disabled</string>
+    <string name="notifications">Notifications</string>
+    <string name="send_feature_toast">Send feature has not been implemented yet.</string>
+    <string name="share_feature_toast">Share feature has not been implemented yet.</string>
+    <string name="gallery">Gallery</string>
+    <string name="stats">Stats</string>
+    <string name="share">Share</string>
+    <string name="send">Send</string>
+    <string name="communicate">Communicate</string>
 </resources>

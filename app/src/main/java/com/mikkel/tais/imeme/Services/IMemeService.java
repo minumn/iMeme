@@ -143,7 +143,7 @@ public class IMemeService extends Service {
 
         // Very important on Android 8.0 and higher to create notificationChannel!
         createNotificationChannel();
-        notificationHandler.postDelayed(notificationRunnable, 5);
+        notificationHandler.postDelayed(notificationRunnable, NOTIFICATION_DELAY);
     }
 
     @Override
