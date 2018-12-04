@@ -42,11 +42,11 @@ import java.util.Calendar;
 
 import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_BOOL_FIRST_TIME;
 import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_BOOL_NOTI;
-import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_INT_BLB_AVG_SEEN_DAY;
+import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_FLOAT_BLB_AVG_SEEN_DAY;
 import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_INT_BLB_SAVED;
 import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_INT_BLB_SEEN;
 import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_INT_BLB_SHARED;
-import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_INT_GEN_AVG_SEEN_DAY;
+import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_FLOAT_GEN_AVG_SEEN_DAY;
 import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_INT_GEN_SAVED;
 import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_INT_GEN_SEEN;
 import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_INT_GEN_SHARED;
@@ -187,13 +187,26 @@ public class IMemeService extends Service {
 
     private void calcAvgPerDayStats() {
         long diff = prefs.getLong(SHARED_PREFS_KEY_LONG_FIRST_TIME, 0) - Calendar.getInstance().getTimeInMillis();
-        float diffDays = diff / 86400000; //1 day in millis
+        float diffDays;
+        if (diff > 86400000) {
+            diffDays = diff / 86400000; //1 day in millis
+        } else {
+            diffDays = (float) 1.0;
+        }
 
         float avgBLB = totalBLBSeen / diffDays;
         float avgGen = totalGeneratedSeen / diffDays;
 
-        setSharedPref(SHARED_PREFS_KEY_INT_BLB_AVG_SEEN_DAY, avgBLB);
-        setSharedPref(SHARED_PREFS_KEY_INT_GEN_AVG_SEEN_DAY, avgGen);
+        if (Float.isInfinite(avgBLB) || Float.isNaN(avgBLB)) {
+            avgBLB = (float) 0.0;
+        }
+
+        if (Float.isInfinite(avgGen) || Float.isNaN(avgGen)) {
+            avgGen = (float) 0.0;
+        }
+
+        setSharedPref(SHARED_PREFS_KEY_FLOAT_BLB_AVG_SEEN_DAY, avgBLB);
+        setSharedPref(SHARED_PREFS_KEY_FLOAT_GEN_AVG_SEEN_DAY, avgGen);
     }
 
 
@@ -291,13 +304,12 @@ public class IMemeService extends Service {
         volleyQueue.add(imageRequest);
     }
 
-    public void saveImageToStorage(Bitmap source, String title) {
-        //TODO: Externalizeeeee!
-        String url = "Image not saved!";
+    public void saveImageToStorage(Bitmap source, String title, Activity activity) {
+        String url = getText(R.string.lbl_image_not_saved).toString();
 
-        if (checkPermissionWRITE_EXTERNAL_STORAGE(this)) {
-            CapturePhotoUtils.insertImage(getContentResolver(), source, title, "Image generated from iMeme");
-            url = "Image saved successfully";
+        if (checkPermissionWRITE_EXTERNAL_STORAGE(this, activity)) {
+            CapturePhotoUtils.insertImage(getContentResolver(), source, title, getText(R.string.lbl_image_gen_from_imeme).toString());
+            url = getText(R.string.lbl_image_saved).toString();
 
             if (title.contains(BLB_SAVE_TITLE)) {
                 totalBLBSaved += 1;
@@ -314,7 +326,7 @@ public class IMemeService extends Service {
     }
 
     // Permission checker and showDialog from https://stackoverflow.com/questions/37672338/java-lang-securityexception-permission-denial-reading-com-android-providers-me
-    private boolean checkPermissionWRITE_EXTERNAL_STORAGE(final Context context) {
+    private boolean checkPermissionWRITE_EXTERNAL_STORAGE(final Context context, Activity activity) {
         int currentAPIVersion = Build.VERSION.SDK_INT;
 
         if (currentAPIVersion >= android.os.Build.VERSION_CODES.M) {
@@ -322,12 +334,12 @@ public class IMemeService extends Service {
                     context,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                 if (ActivityCompat.shouldShowRequestPermissionRationale(
-                        (Activity) context,
+                        activity,
                         Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                    showDialog("External storage", context, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                    showDialog(context);
                 } else {
                     ActivityCompat.requestPermissions(
-                            (Activity) context,
+                            activity,
                             new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                             WRITE_EXTERNAL_STORAGE_REQ);
                 }
@@ -341,16 +353,18 @@ public class IMemeService extends Service {
         }
     }
 
-    private void showDialog(final String msg, final Context context, final String permission) {
+    private void showDialog(final Context context) {
         AlertDialog.Builder alertBuilder = new AlertDialog.Builder(context);
         alertBuilder.setCancelable(true);
-        alertBuilder.setTitle("Permission necessary");
-        alertBuilder.setMessage(msg + " permission is necessary");
+        alertBuilder.setTitle(getText(R.string.lbl_perm_necessary));
+        alertBuilder.setMessage(getText(R.string.lbl_external_storage) + " "
+                + getText(R.string.lbl_perm_is_necessary) + " "
+                + getText(R.string.lbl_save_image_again));
         alertBuilder.setPositiveButton(android.R.string.yes,
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         ActivityCompat.requestPermissions((Activity) context,
-                                new String[]{permission},
+                                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                                 WRITE_EXTERNAL_STORAGE_REQ);
                     }
                 });
@@ -370,7 +384,7 @@ public class IMemeService extends Service {
             NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
                     .setSmallIcon(R.drawable.ic_menu_share)
                     .setContentTitle("iMeme")
-                    .setContentText("Check out this new meme!")
+                    .setContentText(getText(R.string.lbl_noti_msg))
                     .setPriority(NotificationCompat.PRIORITY_MAX)
                     // Following two lines makes you able to tap on the notification to shoot pendingIntent
                     .setContentIntent(pendingIntent)
@@ -409,8 +423,8 @@ public class IMemeService extends Service {
         // Create the NotificationChannel, but only on API 26+ because
         // the NotificationChannel class is new and not in the support library
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            CharSequence name = "iMeme channel"; //getString(R.string.channel_name);
-            String description = "A notification channel used by iMeme"; //getString(R.string.channel_description);
+            CharSequence name = getString(R.string.channel_name);
+            String description = getString(R.string.channel_description);
 
             int importance = NotificationManager.IMPORTANCE_DEFAULT;
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
@@ -498,12 +512,12 @@ public class IMemeService extends Service {
         stats.setTotalBLBSeen(prefs.getInt(SHARED_PREFS_KEY_INT_BLB_SEEN, 0));
         stats.setTotalBLBSaved(prefs.getInt(SHARED_PREFS_KEY_INT_BLB_SAVED, 0));
         stats.setTotalBLBShared(prefs.getInt(SHARED_PREFS_KEY_INT_BLB_SHARED, 0));
-        stats.setTotalBLBAvgSeenDay(prefs.getFloat(SHARED_PREFS_KEY_INT_BLB_AVG_SEEN_DAY, 0));
+        stats.setTotalBLBAvgSeenDay(prefs.getFloat(SHARED_PREFS_KEY_FLOAT_BLB_AVG_SEEN_DAY, 0));
 
         stats.setTotalGeneratedSeen(prefs.getInt(SHARED_PREFS_KEY_INT_GEN_SEEN, 0));
         stats.setTotalGeneratedSaved(prefs.getInt(SHARED_PREFS_KEY_INT_GEN_SAVED, 0));
         stats.setTotalGeneratedShared(prefs.getInt(SHARED_PREFS_KEY_INT_GEN_SHARED, 0));
-        stats.setTotalGeneratedAvgSeenDay(prefs.getFloat(SHARED_PREFS_KEY_INT_GEN_AVG_SEEN_DAY, 0));
+        stats.setTotalGeneratedAvgSeenDay(prefs.getFloat(SHARED_PREFS_KEY_FLOAT_GEN_AVG_SEEN_DAY, 0));
 
         return stats;
     }
@@ -529,7 +543,18 @@ public class IMemeService extends Service {
     }
 
     public void resetStats() {
-        // TODO: impl.
-        // TODO: NOT SAVED STATS
+        totalBLBSeen = 0;
+        totalGeneratedSeen = 0;
+
+        setSharedPref(SHARED_PREFS_KEY_INT_BLB_SEEN, 0);
+        setSharedPref(SHARED_PREFS_KEY_INT_BLB_SHARED, 0);
+        setSharedPref(SHARED_PREFS_KEY_FLOAT_BLB_AVG_SEEN_DAY, 0.0);
+        setSharedPref(SHARED_PREFS_KEY_INT_GEN_SEEN, 0);
+        setSharedPref(SHARED_PREFS_KEY_INT_GEN_SHARED, 0);
+        setSharedPref(SHARED_PREFS_KEY_FLOAT_GEN_AVG_SEEN_DAY, 0.0);
+        setSharedPref(SHARED_PREFS_KEY_LONG_FIRST_TIME, Calendar.getInstance().getTimeInMillis());
+
+        Log.d(LOG_ID, "Stats have been reset!");
+        Toast.makeText(this, "Stats reset", Toast.LENGTH_SHORT).show();
     }
 }

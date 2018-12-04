@@ -85,7 +85,7 @@ public class MemeResultActivity extends AppCompatActivity {
                 int number = iMemeService.getStatsFromSP().getTotalGeneratedSaved();
                 String title = GENERATED_SAVE_TITLE + number;
 
-                iMemeService.saveImageToStorage(generatedMeme, title);
+                iMemeService.saveImageToStorage(generatedMeme, title, MemeResultActivity.this);
             }
         });
     }

@@ -1,6 +1,5 @@
 package com.mikkel.tais.imeme;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
@@ -9,7 +8,6 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -90,7 +88,7 @@ public class SettingsActivity extends AppCompatActivity {
         });
 
         silentTimeTxt = findViewById(R.id.silentTimeTxt);
-        silentTimeTxt.setText("None");
+        silentTimeTxt.setText(getText(R.string.lbl_silent_time));
 
         initSwitch();
 
@@ -106,7 +104,7 @@ public class SettingsActivity extends AppCompatActivity {
     // # # # Utility functions # # #
     private void updateSilentTimeTxt() {
         if (silentTimeStart.equals(silentTimeEnd)) {
-            silentTimeTxt.setText("None");
+            silentTimeTxt.setText(getText(R.string.lbl_silent_time));
         } else {
             silentTimeTxt.setText(String.format("%02d:%02d-%02d:%02d", silentTimeStart / 60, silentTimeStart % 60, silentTimeEnd / 60, silentTimeEnd % 60));
         }
@@ -144,13 +142,12 @@ public class SettingsActivity extends AppCompatActivity {
 
     private void showDialog() {
         AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
-        alertBuilder.setTitle("Reset stats");
-        alertBuilder.setMessage("Are you sure you want to reset stats");
+        alertBuilder.setTitle(getText(R.string.lbl_reset_stats));
+        alertBuilder.setMessage(getText(R.string.lbl_reset_stats_confirm));
 
         alertBuilder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 iMemeService.resetStats();
-                Toast.makeText(getApplicationContext(), "Stats reset", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -164,7 +161,7 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void saveClicked() {
-        Toast.makeText(this, "Silent time saved", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, getText(R.string.lbl_silent_time_saved), Toast.LENGTH_SHORT).show();
         iMemeService.setSilentTime(silentTimeStart, silentTimeEnd);
     }
 
@@ -177,7 +174,6 @@ public class SettingsActivity extends AppCompatActivity {
                     notificationLevel = isChecked;
                     updateSilentTimeTxt();
                     iMemeService.setNotificationLevel(isChecked);
-                    // Toast.makeText(SettingsActivity.this, "Switch ", Toast.LENGTH_SHORT).show();
                 }
             }
         });

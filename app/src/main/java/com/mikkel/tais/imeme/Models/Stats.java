@@ -11,12 +11,12 @@ public class Stats {
     public static final String SHARED_PREFS_KEY_INT_BLB_SEEN = "prefs_key_blb_seen";
     public static final String SHARED_PREFS_KEY_INT_BLB_SAVED = "prefs_key_blb_saved";
     public static final String SHARED_PREFS_KEY_INT_BLB_SHARED = "prefs_key_blb_shared";
-    public static final String SHARED_PREFS_KEY_INT_BLB_AVG_SEEN_DAY = "prefs_key_blb_avg_seen_day";
+    public static final String SHARED_PREFS_KEY_FLOAT_BLB_AVG_SEEN_DAY = "prefs_key_blb_avg_seen_day";
 
     public static final String SHARED_PREFS_KEY_INT_GEN_SEEN = "prefs_key_gen_seen";
     public static final String SHARED_PREFS_KEY_INT_GEN_SAVED = "prefs_key_gen_saved";
     public static final String SHARED_PREFS_KEY_INT_GEN_SHARED = "prefs_key_gen_shared";
-    public static final String SHARED_PREFS_KEY_INT_GEN_AVG_SEEN_DAY = "prefs_key_gen_avg_seen_day";
+    public static final String SHARED_PREFS_KEY_FLOAT_GEN_AVG_SEEN_DAY = "prefs_key_gen_avg_seen_day";
 
     private int totalBLBSeen;
     private int totalBLBSaved;

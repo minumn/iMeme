@@ -82,7 +82,6 @@ public class RandomMemeFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Toast.makeText(getActivity(), "Refresh meme clicked!", Toast.LENGTH_SHORT).show();
-                // TODO: Should prob use ViewModel?
                 iMemeService.requestRandomMeme();
             }
         });
@@ -93,7 +92,7 @@ public class RandomMemeFragment extends Fragment {
                 int number = iMemeService.getStatsFromSP().getTotalBLBSaved();
                 String title = BLB_SAVE_TITLE + number;
 
-                iMemeService.saveImageToStorage(currentMeme, title);
+                iMemeService.saveImageToStorage(currentMeme, title, getActivity());
             }
         });
     }

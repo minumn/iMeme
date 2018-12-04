@@ -16,6 +16,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.InputFilter;
 import android.text.InputType;
+import android.text.Spanned;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -54,6 +55,19 @@ public class MemeGeneratorFragment extends Fragment {
     private List<Meme> memes;
     private MemeAdaptor adaptor;
 
+    private InputFilter filter = new InputFilter() {
+        @Override
+        public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
+            //REF: https://stackoverflow.com/questions/21828323/how-can-restrict-my-edittext-input-to-some-special-character-like-backslash-t
+            String blockCharacterSet = "~#^|$%&*";
+            if (source != null && blockCharacterSet.contains(("" + source))) {
+                return "";
+            }
+
+            return null;
+        }
+    };
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
@@ -85,11 +99,10 @@ public class MemeGeneratorFragment extends Fragment {
         LinearLayout layout = new LinearLayout(getContext());
         layout.setOrientation(LinearLayout.VERTICAL);
 
-        //TODO: Externalizeeeee!
-        final EditText edtText1 = setupDialogEditText("Insert text 1 bla");
+        final EditText edtText1 = setupDialogEditText(getText(R.string.edt_top_text).toString());
         layout.addView(edtText1);
 
-        final EditText edtText2 = setupDialogEditText("Insert text 2 bla");
+        final EditText edtText2 = setupDialogEditText(getText(R.string.edt_bottom_text).toString());
         layout.addView(edtText2);
 
         builder.setView(layout);
@@ -101,15 +114,14 @@ public class MemeGeneratorFragment extends Fragment {
                 String text2 = edtText2.getText().toString().trim();
 
                 if (text1.equals("") || text2.equals("")) {
-                    //TODO: Externalizeeeee!
-                    Toast.makeText(getActivity(), "Fill out the text fields", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), getText(R.string.lbl_fill_out_all_fields), Toast.LENGTH_SHORT).show();
                 } else {
                     goToResult(meme, text1, text2);
                 }
             }
         });
 
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton(getText(R.string.lbl_cancel), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
             }
@@ -121,8 +133,8 @@ public class MemeGeneratorFragment extends Fragment {
     private EditText setupDialogEditText(String hint) {
         final EditText text = new EditText(getContext());
         text.setHint(hint);
-        text.setInputType(InputType.TYPE_TEXT_VARIATION_PERSON_NAME);
-        text.setFilters(new InputFilter[]{new InputFilter.LengthFilter(50)});
+        text.setInputType(InputType.TYPE_TEXT_VARIATION_PERSON_NAME | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+        text.setFilters(new InputFilter[]{new InputFilter.LengthFilter(50), filter});
 
         return text;
     }
