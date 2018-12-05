@@ -22,7 +22,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.mikkel.tais.imeme.Fragments.BlankFragment;
+import com.mikkel.tais.imeme.Fragments.FrontPageFragment;
 import com.mikkel.tais.imeme.Fragments.MemeGeneratorFragment;
 import com.mikkel.tais.imeme.Fragments.RandomMemeFragment;
 import com.mikkel.tais.imeme.Fragments.StatsFragment;
@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private RandomMemeFragment randomMemeFragment = new RandomMemeFragment();
     private StatsFragment statsFragment = new StatsFragment();
     private MemeGeneratorFragment memeGeneratorFragment = new MemeGeneratorFragment();
-    private BlankFragment mainFragment = new BlankFragment();
+    private FrontPageFragment mainFragment = new FrontPageFragment();
     private static final int SETTINGS_REQ = 102;
 
     // # # # SERVICE FUNCTIONALITY # # #
