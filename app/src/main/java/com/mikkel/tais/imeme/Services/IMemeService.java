@@ -61,7 +61,6 @@ import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_NAME;
  */
 public class IMemeService extends Service {
     // TODO: Make Service persistent
-    // TODO: Make Notifications based on user preferences
 
     private static final String CHANNEL_ID = "IMemeServiceNotification";
     public static final String BROADCAST_NEW_BILL_MEME_AVAILABLE = "broadcast_new_bill_meme_available";
@@ -96,7 +95,7 @@ public class IMemeService extends Service {
     private static final int NOTIFICATION_ID = 101;
     private int silentTimeStart, silentTimeEnd;
     private boolean notificationLevel;
-    private static final long NOTIFICATION_DELAY = 1000 * 60 * 60; // 60 minutes
+    private static final long NOTIFICATION_DELAY = 1000 * 60 ; // 60 minutes
 
     Handler notificationHandler = new Handler();
     Runnable notificationRunnable = new Runnable() {
@@ -130,6 +129,7 @@ public class IMemeService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        Log.d(LOG_ID, "iMemeService has been created.");
 
         // Init stuff
         volleyQueue = Volley.newRequestQueue(this);
@@ -149,6 +149,7 @@ public class IMemeService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        Log.d(LOG_ID, "iMemeService has been destroyed.");
     }
 
     // # # # Functionality functions # # #
@@ -375,7 +376,9 @@ public class IMemeService extends Service {
     // # # # Notifications # # #
     // REF: https://developer.android.com/training/notify-user/build-notification
     private void notifyUserAboutNewMeme() {
-        if (notificationLevel && silentTimeNotNow()) {
+        boolean throw_notification = notificationLevel && silentTimeNotNow();
+        Log.d(LOG_ID, "notifyUserAboutNewMeme called. Throw_notification: " + throw_notification);
+        if (throw_notification) {
             Intent intent = new Intent(this, MainActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             intent.setAction("bill");
@@ -447,7 +450,6 @@ public class IMemeService extends Service {
     }
 
     public void setSilentTime(int silentTimeStart_, int silentTimeEnd_) {
-        // TODO: Could prevent alarms from being called during silent time?
         silentTimeStart = silentTimeStart_;
         silentTimeEnd = silentTimeEnd_;
 

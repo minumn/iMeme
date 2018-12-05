@@ -22,7 +22,6 @@ import android.widget.Toast;
 import com.mikkel.tais.imeme.Services.IMemeService;
 
 public class SettingsActivity extends AppCompatActivity {
-    // TODO: Could look into https://developer.android.com/guide/topics/ui/controls/pickers
     private static final String LOG_ID = "SettingActivity_log";
     private SeekBar timeSliderEnd, timeSliderStart;
     private TextView silentTimeTxt;

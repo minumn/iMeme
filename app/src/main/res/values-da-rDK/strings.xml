@@ -50,7 +50,7 @@
     <string name="txt_welcome">Velkommen til iMeme! Brug menuen til venstre for at vælge en kategori.</string>
     <string name="stats_reset">Statistik nulstillet</string>
     <string name="save">Gem</string>
-    <string name="reset_stats">Nulstil stats</string>
+    <string name="reset_stats">Nulstil statistik</string>
     <string name="silent_time">Stille tid:</string>
     <string name="notifications">Notifikationer</string>
     <string name="send_feature_toast">Send funktionalitet ikke implementeret.</string>
