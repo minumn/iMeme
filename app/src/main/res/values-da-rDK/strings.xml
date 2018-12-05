@@ -58,4 +58,7 @@
     <string name="stats">Statistik</string>
     <string name="share">Del</string>
     <string name="communicate">Kommuniker</string>
+    <string name="notifications_enabled">Notifikationer aktiveret</string>
+    <string name="notifications_disabled">Notifikationer deaktiveret</string>
+    <string name="gallery">Galleri</string>
 </resources>
