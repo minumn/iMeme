@@ -16,9 +16,9 @@
         android:layout_marginEnd="63dp"
         android:layout_marginRight="63dp"
         android:checked="true"
-        android:text="Notifications"
-        android:textOff="Notifications Disabled"
-        android:textOn="Notifications Enabled"
+        android:text="@string/notifications"
+        android:textOff="@string/notifications_disabled"
+        android:textOn="@string/notifications_enabled"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:checked="true" />
@@ -32,7 +32,7 @@
         android:layout_marginTop="100dp"
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
-        android:text="Save"
+        android:text="@string/save"
         app:layout_constraintEnd_toStartOf="@+id/resetStatsBtn"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/seekBarSilentStart" />
@@ -75,7 +75,7 @@
         android:layout_marginStart="64dp"
         android:layout_marginLeft="64dp"
         android:layout_marginTop="152dp"
-        android:text="Silent time:"
+        android:text="@string/silent_time"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -86,7 +86,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
         android:layout_marginLeft="4dp"
-        android:text="timePlaceholder"
+        android:text="@string/timeplaceholder"
         app:layout_constraintStart_toEndOf="@+id/lblSilentTime"
         app:layout_constraintTop_toTopOf="@+id/lblSilentTime" />
 
@@ -98,7 +98,7 @@
         android:layout_marginLeft="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
-        android:text="Reset STATS"
+        android:text="@string/reset_stats"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/saveNotificationsBtn"
         app:layout_constraintTop_toTopOf="@+id/saveNotificationsBtn" />

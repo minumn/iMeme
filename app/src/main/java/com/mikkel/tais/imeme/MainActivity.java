@@ -214,6 +214,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 setFragmentView(statsFragment);
                 currentFragment = statsFragment;
                 break;
+            case R.id.nav_share:
+                Toast.makeText(iMemeService, getString(R.string.share_feature_toast), Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.nav_send:
+                Toast.makeText(iMemeService, getString(R.string.send_feature_toast), Toast.LENGTH_SHORT).show();
+                break;
+
         }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);

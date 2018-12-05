@@ -48,4 +48,14 @@
     <string name="lbl_stats_reset_toast">Stats succesfuldt nulstillet</string>
     <string name="lbl_silent_time_saved">Lydløs tid gemt</string>
     <string name="txt_welcome">Velkommen til iMeme! Brug menuen til venstre for at vælge en kategori.</string>
+    <string name="stats_reset">Statistik nulstillet</string>
+    <string name="save">Gem</string>
+    <string name="reset_stats">Nulstil statistik</string>
+    <string name="silent_time">Stille tid:</string>
+    <string name="notifications">Notifikationer</string>
+    <string name="send_feature_toast">Send funktionalitet ikke implementeret.</string>
+    <string name="share_feature_toast">Del funktionalitet ikke implementeret.</string>
+    <string name="stats">Statistik</string>
+    <string name="share">Del</string>
+    <string name="communicate">Kommuniker</string>
 </resources>

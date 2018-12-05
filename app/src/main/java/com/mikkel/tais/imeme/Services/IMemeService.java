@@ -61,7 +61,6 @@ import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_NAME;
  */
 public class IMemeService extends Service {
     // TODO: Make Service persistent
-    // TODO: Make Notifications based on user preferences
 
     private static final String CHANNEL_ID = "IMemeServiceNotification";
     public static final String BROADCAST_NEW_BILL_MEME_AVAILABLE = "broadcast_new_bill_meme_available";
@@ -96,7 +95,7 @@ public class IMemeService extends Service {
     private static final int NOTIFICATION_ID = 101;
     private int silentTimeStart, silentTimeEnd;
     private boolean notificationLevel;
-    private static final long NOTIFICATION_DELAY = 1000 * 60 * 60; // 60 minutes
+    private static final long NOTIFICATION_DELAY = 1000 * 60 ; // 60 minutes
 
     Handler notificationHandler = new Handler();
     Runnable notificationRunnable = new Runnable() {
@@ -130,6 +129,7 @@ public class IMemeService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        Log.d(LOG_ID, "iMemeService has been created.");
 
         // Init stuff
         volleyQueue = Volley.newRequestQueue(this);
@@ -143,12 +143,13 @@ public class IMemeService extends Service {
 
         // Very important on Android 8.0 and higher to create notificationChannel!
         createNotificationChannel();
-        notificationHandler.postDelayed(notificationRunnable, 5);
+        notificationHandler.postDelayed(notificationRunnable, NOTIFICATION_DELAY);
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        Log.d(LOG_ID, "iMemeService has been destroyed.");
     }
 
     // # # # Functionality functions # # #
@@ -375,7 +376,9 @@ public class IMemeService extends Service {
     // # # # Notifications # # #
     // REF: https://developer.android.com/training/notify-user/build-notification
     private void notifyUserAboutNewMeme() {
-        if (notificationLevel && silentTimeNotNow()) {
+        boolean throw_notification = notificationLevel && silentTimeNotNow();
+        Log.d(LOG_ID, "notifyUserAboutNewMeme called. Throw_notification: " + throw_notification);
+        if (throw_notification) {
             Intent intent = new Intent(this, MainActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             intent.setAction("bill");
@@ -395,6 +398,10 @@ public class IMemeService extends Service {
         }
     }
 
+    /**
+     * This function checks if current time is in the silent time interval.
+     * @return boolean value for above.
+     */
     private boolean silentTimeNotNow() {
         Calendar cal = Calendar.getInstance();
         int currentHour = cal.get(cal.HOUR_OF_DAY), currentMinute = cal.get(cal.MINUTE);
@@ -443,7 +450,6 @@ public class IMemeService extends Service {
     }
 
     public void setSilentTime(int silentTimeStart_, int silentTimeEnd_) {
-        // TODO: Set alarms
         silentTimeStart = silentTimeStart_;
         silentTimeEnd = silentTimeEnd_;
 
@@ -557,6 +563,6 @@ public class IMemeService extends Service {
         calcAvgPerDayStats();
 
         Log.d(LOG_ID, "Stats have been reset!");
-        Toast.makeText(this, "Stats reset", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, getString(R.string.stats_reset), Toast.LENGTH_SHORT).show();
     }
 }
