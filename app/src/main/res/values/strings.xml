@@ -111,7 +111,7 @@
     <string name="stats_reset">Stats reset</string>
     <string name="save">Save</string>
     <string name="reset_stats">Reset STATS</string>
-    <string name="timeplaceholder">timePlaceholder</string>
+    <string name="timeplaceholder" translatable="false">timePlaceholder</string>
     <string name="silent_time">Silent time:</string>
     <string name="notifications_enabled">Notifications Enabled</string>
     <string name="notifications_disabled">Notifications Disabled</string>
@@ -121,6 +121,6 @@
     <string name="gallery">Gallery</string>
     <string name="stats">Stats</string>
     <string name="share">Share</string>
-    <string name="send">Send</string>
+    <string name="send" translatable="false">Send</string>
     <string name="communicate">Communicate</string>
 </resources>
