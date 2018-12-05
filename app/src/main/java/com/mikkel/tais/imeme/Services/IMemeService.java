@@ -186,7 +186,7 @@ public class IMemeService extends Service {
     }
 
     private void calcAvgPerDayStats() {
-        long diff = prefs.getLong(SHARED_PREFS_KEY_LONG_FIRST_TIME, 0) - Calendar.getInstance().getTimeInMillis();
+        long diff = Calendar.getInstance().getTimeInMillis() - prefs.getLong(SHARED_PREFS_KEY_LONG_FIRST_TIME, 0);
         float diffDays;
         if (diff > 86400000) {
             diffDays = diff / 86400000; //1 day in millis
@@ -553,6 +553,8 @@ public class IMemeService extends Service {
         setSharedPref(SHARED_PREFS_KEY_INT_GEN_SHARED, 0);
         setSharedPref(SHARED_PREFS_KEY_FLOAT_GEN_AVG_SEEN_DAY, 0.0);
         setSharedPref(SHARED_PREFS_KEY_LONG_FIRST_TIME, Calendar.getInstance().getTimeInMillis());
+
+        calcAvgPerDayStats();
 
         Log.d(LOG_ID, "Stats have been reset!");
         Toast.makeText(this, "Stats reset", Toast.LENGTH_SHORT).show();
