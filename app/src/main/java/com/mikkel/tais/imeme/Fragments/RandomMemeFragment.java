@@ -19,7 +19,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.mikkel.tais.imeme.R;
 import com.mikkel.tais.imeme.Services.IMemeService;
@@ -81,7 +80,6 @@ public class RandomMemeFragment extends Fragment {
         refreshMemeBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getActivity(), "Refresh meme clicked!", Toast.LENGTH_SHORT).show();
                 iMemeService.requestRandomMeme();
             }
         });

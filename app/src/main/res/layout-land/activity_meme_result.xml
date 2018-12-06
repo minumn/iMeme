@@ -8,8 +8,8 @@
 
     <RelativeLayout
         android:id="@+id/loadingPanel"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:gravity="center"
         app:layout_constraintBottom_toBottomOf="@+id/imgGenMeme"
         app:layout_constraintEnd_toEndOf="@+id/imgGenMeme"
@@ -24,14 +24,17 @@
 
     <ImageView
         android:id="@+id/imgGenMeme"
-        android:layout_width="256dp"
-        android:layout_height="258dp"
-        android:layout_marginBottom="130dp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginLeft="24dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline2"
         app:layout_constraintHorizontal_bias="0.047"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/lblResultHeader"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.253"
         tools:src="@tools:sample/avatars" />
 
@@ -60,8 +63,14 @@
         android:textSize="30sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.888"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline2"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.5" />
 
 </android.support.constraint.ConstraintLayout>

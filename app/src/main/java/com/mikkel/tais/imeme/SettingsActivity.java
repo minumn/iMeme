@@ -17,7 +17,6 @@ import android.widget.CompoundButton;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.mikkel.tais.imeme.Services.IMemeService;
 
@@ -160,7 +159,6 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void saveClicked() {
-        Toast.makeText(this, getText(R.string.lbl_silent_time_saved), Toast.LENGTH_SHORT).show();
         iMemeService.setSilentTime(silentTimeStart, silentTimeEnd);
     }
 

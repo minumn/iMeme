@@ -29,7 +29,6 @@ import android.widget.Toast;
 
 import com.mikkel.tais.imeme.MemeResultActivity;
 import com.mikkel.tais.imeme.Models.Meme;
-import com.mikkel.tais.imeme.Models.Stats;
 import com.mikkel.tais.imeme.R;
 import com.mikkel.tais.imeme.Services.IMemeService;
 import com.mikkel.tais.imeme.Utils.MemeAdaptor;
@@ -42,7 +41,6 @@ import static com.mikkel.tais.imeme.MemeResultActivity.EXTRA_MEME_T1;
 import static com.mikkel.tais.imeme.MemeResultActivity.EXTRA_MEME_T2;
 import static com.mikkel.tais.imeme.Services.IMemeService.BROADCAST_LIST_OF_MEMES;
 import static com.mikkel.tais.imeme.Services.IMemeService.BROADCAST_MEME_LIST_RESULT;
-import static com.mikkel.tais.imeme.Services.IMemeService.BROADCAST_NEW_BILL_MEME_AVAILABLE;
 
 public class MemeGeneratorFragment extends Fragment {
     public IMemeService iMemeService;

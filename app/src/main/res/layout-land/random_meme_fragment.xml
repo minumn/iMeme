@@ -12,8 +12,8 @@
 
         <RelativeLayout
             android:id="@+id/loadingPanelBill"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:gravity="center"
             app:layout_constraintBottom_toBottomOf="@+id/randomMemeImageView"
             app:layout_constraintEnd_toEndOf="@+id/randomMemeImageView"
@@ -28,55 +28,69 @@
 
         <ImageView
             android:id="@+id/randomMemeImageView"
-            android:layout_width="485dp"
-            android:layout_height="253dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginLeft="8dp"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginLeft="24dp"
             android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
+            android:layout_marginBottom="12dp"
             android:contentDescription="@string/randommemeimage"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintEnd_toStartOf="@+id/guideline3"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/lblBLBHeader"
             tools:src="@tools:sample/avatars" />
 
         <Button
             android:id="@+id/newMemeBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginTop="50dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
             android:layout_marginBottom="8dp"
             android:text="@string/next_meme"
             app:layout_constraintBottom_toTopOf="@+id/btnSaveBill"
-            app:layout_constraintEnd_toEndOf="@+id/btnSaveBill"
-            app:layout_constraintStart_toStartOf="@+id/btnSaveBill" />
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/guideline3"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <Button
             android:id="@+id/btnSaveBill"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:layout_marginEnd="50dp"
-            android:layout_marginRight="50dp"
-            android:layout_marginBottom="32dp"
+            android:layout_marginBottom="50dp"
             android:text="@string/btn_save_bill"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_chainStyle="spread_inside"
-            app:layout_constraintTop_toBottomOf="@+id/lblBLBHeader"
-            app:layout_constraintVertical_bias="0.959" />
+            app:layout_constraintEnd_toEndOf="@+id/newMemeBtn"
+            app:layout_constraintStart_toStartOf="@+id/newMemeBtn"
+            app:layout_constraintTop_toBottomOf="@+id/newMemeBtn" />
 
         <TextView
             android:id="@+id/lblBLBHeader"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
             android:text="@string/lbl_blb_header"
             android:textSize="30sp"
             android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="@+id/btnSaveBill"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+        <android.support.constraint.Guideline
+            android:id="@+id/guideline3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.75" />
 
     </android.support.constraint.ConstraintLayout>
 

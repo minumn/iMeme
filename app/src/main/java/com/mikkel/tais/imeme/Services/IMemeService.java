@@ -95,7 +95,7 @@ public class IMemeService extends Service {
     private static final int NOTIFICATION_ID = 101;
     private int silentTimeStart, silentTimeEnd;
     private boolean notificationLevel;
-    private static final long NOTIFICATION_DELAY = 1000 * 60 ; // 60 minutes
+    private static final long NOTIFICATION_DELAY = 1000 * 60 * 60; // 60 minutes
 
     Handler notificationHandler = new Handler();
     Runnable notificationRunnable = new Runnable() {
@@ -400,6 +400,7 @@ public class IMemeService extends Service {
 
     /**
      * This function checks if current time is in the silent time interval.
+     *
      * @return boolean value for above.
      */
     private boolean silentTimeNotNow() {
@@ -456,6 +457,7 @@ public class IMemeService extends Service {
         setSharedPref(SHARED_PREFS_KEY_INT_SILENT_START, silentTimeStart);
         setSharedPref(SHARED_PREFS_KEY_INT_SILENT_END, silentTimeEnd);
 
+        Toast.makeText(this, getText(R.string.lbl_silent_time_saved), Toast.LENGTH_SHORT).show();
     }
 
     public boolean getNotificationLevel() {

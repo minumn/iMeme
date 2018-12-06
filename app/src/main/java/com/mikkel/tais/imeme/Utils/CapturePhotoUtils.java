@@ -15,7 +15,7 @@ import android.provider.MediaStore.Images;
 
 /**
  * Image saving util copied from https://gist.github.com/samkirton/0242ba81d7ca00b475b9
- *
+ * <p>
  * Android internals have been modified to store images in the media folder with
  * the correct date meta data
  *
