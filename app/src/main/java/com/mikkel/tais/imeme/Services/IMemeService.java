@@ -43,10 +43,10 @@ import java.util.Calendar;
 import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_BOOL_FIRST_TIME;
 import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_BOOL_NOTI;
 import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_FLOAT_BLB_AVG_SEEN_DAY;
+import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_FLOAT_GEN_AVG_SEEN_DAY;
 import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_INT_BLB_SAVED;
 import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_INT_BLB_SEEN;
 import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_INT_BLB_SHARED;
-import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_FLOAT_GEN_AVG_SEEN_DAY;
 import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_INT_GEN_SAVED;
 import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_INT_GEN_SEEN;
 import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_KEY_INT_GEN_SHARED;
@@ -60,8 +60,6 @@ import static com.mikkel.tais.imeme.Models.Stats.SHARED_PREFS_NAME;
  * The Service should be persistent so it can send notifications when the app is not open.
  */
 public class IMemeService extends Service {
-    // TODO: Make Service persistent
-
     private static final String CHANNEL_ID = "IMemeServiceNotification";
     public static final String BROADCAST_NEW_BILL_MEME_AVAILABLE = "broadcast_new_bill_meme_available";
     public static final String BROADCAST_LIST_OF_MEMES = "broadcast_list_of_memes";
@@ -190,7 +188,7 @@ public class IMemeService extends Service {
         long diff = Calendar.getInstance().getTimeInMillis() - prefs.getLong(SHARED_PREFS_KEY_LONG_FIRST_TIME, 0);
         float diffDays;
         if (diff > 86400000) {
-            diffDays = diff / 86400000; //1 day in millis
+            diffDays = (float) diff / 86400000; //1 day in millis
         } else {
             diffDays = (float) 1.0;
         }
@@ -224,9 +222,9 @@ public class IMemeService extends Service {
                         broadcastNewBillMemeAvailable("OK");
                     }
                 },
-                0, // Image width
-                0, // Image height
-                ImageView.ScaleType.CENTER_CROP, // Image scale type
+                0, //Image width
+                0, //Image height
+                ImageView.ScaleType.CENTER_CROP, //Image scale type
                 Bitmap.Config.RGB_565, //Image decode configuration
                 new Response.ErrorListener() {
                     @Override

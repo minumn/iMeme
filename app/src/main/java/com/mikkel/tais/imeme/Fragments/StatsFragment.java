@@ -19,6 +19,8 @@ import com.mikkel.tais.imeme.Models.Stats;
 import com.mikkel.tais.imeme.R;
 import com.mikkel.tais.imeme.Services.IMemeService;
 
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.util.Date;
 
 public class StatsFragment extends Fragment {
@@ -66,6 +68,13 @@ public class StatsFragment extends Fragment {
         txtAvgGenDay = getActivity().findViewById(R.id.txtAvgGenDay);
     }
 
+    private String convertFloat(float f) {
+        DecimalFormat df = new DecimalFormat("#.#");
+        df.setRoundingMode(RoundingMode.CEILING);
+
+        return df.format(f);
+    }
+
     // # # # SERVICE FUNCTIONALITY # # #
     private void setupConnectionToIMemeService() {
         serviceConnection = new ServiceConnection() {
@@ -77,10 +86,10 @@ public class StatsFragment extends Fragment {
                 txtFirstUsage.setText(new Date(iMemeService.getFirstUsageFromSP()).toLocaleString());
                 txtTotalBLBSeen.setText(Integer.toString(stats.getTotalBLBSeen()));
                 txtTotalBLBSaved.setText(Integer.toString(stats.getTotalBLBSaved()));
-                txtAvgBLBSeen.setText(Float.toString(stats.getTotalBLBAvgSeenDay()));
+                txtAvgBLBSeen.setText(convertFloat(stats.getTotalBLBAvgSeenDay()));
                 txtTotalGenSeen.setText(Integer.toString(stats.getTotalGeneratedSeen()));
                 txtTotalGenSaved.setText(Integer.toString(stats.getTotalGeneratedSaved()));
-                txtAvgGenDay.setText(Float.toString(stats.getTotalGeneratedAvgSeenDay()));
+                txtAvgGenDay.setText(convertFloat(stats.getTotalGeneratedAvgSeenDay()));
             }
 
             public void onServiceDisconnected(ComponentName className) {
